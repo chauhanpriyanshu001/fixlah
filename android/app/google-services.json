@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "52566221516",
+    "project_id": "fixlah-54430",
+    "storage_bucket": "fixlah-54430.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:52566221516:android:4da2cd0552bee8170e5869",
+        "android_client_info": {
+          "package_name": "com.app.fixlah"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD-ddr2UAuiqGTYnmy-wjMLrQhDjLG-np4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
