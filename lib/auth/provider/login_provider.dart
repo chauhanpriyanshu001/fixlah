@@ -180,6 +180,8 @@ class LoginState extends ChangeNotifier {
           fontSize: 15.r,
         );
         faceImage = null;
+      } else {
+        Navigator.pop(context);
       }
     } catch (e) {
       log("Error in Face Lock Setup");

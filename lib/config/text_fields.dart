@@ -65,7 +65,9 @@ class _CustomTextFieldsState extends State<CustomTextFields> {
                 suffix: widget.suffix,
                 contentPadding:
                     EdgeInsets.symmetric(vertical: 15.r, horizontal: 15.r),
-                fillColor: NewColors.whitecolor,
+                fillColor: widget.readOnly == true && widget.onTap == null
+                    ? const Color.fromARGB(166, 226, 226, 226)
+                    : NewColors.whitecolor,
                 filled: true,
                 hintText: widget.hintText,
                 errorStyle: TextStyle(height: 0, fontSize: 0),

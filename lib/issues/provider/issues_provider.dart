@@ -218,27 +218,51 @@ class IssuesProvider extends ChangeNotifier {
   }
 
   // load more data
-  Future getMoreData(context) async {
+  Future getMoreData(context, {required int newpage}) async {
     try {
-      loadingMore = true;
-      currentPage = currentPage + 1;
+      loading = true;
+      currentPage = newpage;
       notifyListeners();
       ApiResponse apiResponse = await ApiCall.getApi(context,
           endpoint:
               "${ApiEndpoints.issues}?facility_ids=${selectedFacilities.join(",")}&page=$currentPage&status=${status.replaceAll(" ", "")}&search=$search");
 
       if (apiResponse.statusCode == 200) {
-        IssuesList tempissuesList = IssuesList.fromJson(apiResponse.response!);
-        print(tempissuesList.data!.nextPageUrl);
-        for (var i = 0; i < tempissuesList.data!.data!.length; i++) {
-          IssueData issueData = tempissuesList.data!.data![i];
-          issuesList.data!.data!.add(issueData);
-          notifyListeners();
-        }
+        // IssuesList tempissuesList = IssuesList.fromJson(apiResponse.response!);
+        // print(tempissuesList.data!.nextPageUrl);
+        // for (var i = 0; i < tempissuesList.data!.data!.length; i++) {
+        //   IssueData issueData = tempissuesList.data!.data![i];
+        //   issuesList.data!.data!.add(issueData);
+        //   notifyListeners();
+        // }
+        // statusCount = issuesList.data!.total ?? 0;
+        // print(issuesList.data!.data!.length);
+        // if (filter != "ALL") {
+        //   // Check for filter
+        //   List<IssueData> newDataList = [];
+        //   for (var i = 0; i < issuesList.data!.data!.length; i++) {
+        //     if (filter == "CREAM") {
+        //       if (issuesList.data!.data![i].creamUnit == 1) {
+        //         newDataList.add(issuesList.data!.data![i]);
+        //       }
+        //     }
+        //     if (filter == "NON-CREAM") {
+        //       if (issuesList.data!.data![i].creamUnit == 0) {
+        //         newDataList.add(issuesList.data!.data![i]);
+        //       }
+        //     }
+        //   }
+        //   issuesList.data!.data = newDataList;
+        // }
+        issuesList = IssuesList();
+        issuesList = IssuesList.fromJson(apiResponse.response!);
+        log(apiResponse.response.toString());
+
         statusCount = issuesList.data!.total ?? 0;
         print(issuesList.data!.data!.length);
         if (filter != "ALL") {
           // Check for filter
+          log(issuesList.data!.data.toString());
           List<IssueData> newDataList = [];
           for (var i = 0; i < issuesList.data!.data!.length; i++) {
             if (filter == "CREAM") {
@@ -259,7 +283,7 @@ class IssuesProvider extends ChangeNotifier {
       print("This is error");
       print(e.toString());
     } finally {
-      loadingMore = false;
+      loading = false;
       notifyListeners();
     }
   }
@@ -351,7 +375,8 @@ class IssuesProvider extends ChangeNotifier {
             "facility_unit_id": "",
             "cream_unit": "0",
             "client_id": facilitiesProvider.selectedClient.client?.id ?? "",
-            "location_tag_id": qrlocationTagData.id ?? ""
+            "location_tag_id": qrlocationTagData.id ?? "",
+            "items[0][remarks]": qrlocationTagData.name ?? ""
           };
         }
         // await getAssets(context);
@@ -397,10 +422,10 @@ class IssuesProvider extends ChangeNotifier {
     createIssue.addAll({
       "issue_raised_by": "Dorm Ops",
       "items[0][done_by]": "dormetry",
-      "items[0][remarks]": "test",
       "location_tag_id": ""
     });
-    print(createIssue);
+    log("--DATA--");
+    log(jsonEncode(createIssue));
     ApiResponse apiResponse = await ApiCall.postApi(context,
         endpoint: ApiEndpoints.issues,
         body: createIssue,

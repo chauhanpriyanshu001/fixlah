@@ -141,38 +141,44 @@ class _UnitIssue2State extends State<UnitIssue2> {
                                     FacilityData facilitiData =
                                         facilitiesProvider
                                             .facilityList.data!.data![index];
-                                    return ListTile(
-                                      onTap: () {
-                                        issuesProvider
-                                            .createIssueDataController({
-                                          "client_id": "",
-                                          "facility_block_id": "",
-                                          "facility_unit_id": "",
-                                          "cream_unit": "",
-                                        });
-                                        clientName.text = "";
-                                        blocktName.text = "";
-                                        unitNo.text = "";
-                                        issueType = "";
-                                        facilitiesProvider.getBlock(context,
-                                            facilityId: facilitiData.id!);
+                                    return facilitiesProvider
+                                            .selectedFacilitiesName
+                                            .contains(facilitiData.name!)
+                                        ? ListTile(
+                                            onTap: () {
+                                              issuesProvider
+                                                  .createIssueDataController({
+                                                "client_id": "",
+                                                "facility_block_id": "",
+                                                "facility_unit_id": "",
+                                                "cream_unit": "",
+                                              });
+                                              clientName.text = "";
+                                              blocktName.text = "";
+                                              unitNo.text = "";
+                                              issueType = "";
+                                              facilitiesProvider.getBlock(
+                                                  context,
+                                                  facilityId: facilitiData.id!);
 
-                                        facilityName.text = facilitiData.name!;
-                                        issuesProvider
-                                            .createIssueDataController({
-                                          "facility_id": facilitiData.id!
-                                        });
-                                        issuesProvider.getAssets(context);
-                                        Navigator.pop(context);
-                                      },
-                                      title: Text(
-                                        facilitiData.name ?? "",
-                                        style: TextStyle(
-                                            color: NewColors.black,
-                                            fontWeight: mediumFontWeight,
-                                            fontSize: buildFontSize(30)),
-                                      ),
-                                    );
+                                              facilityName.text =
+                                                  facilitiData.name!;
+                                              issuesProvider
+                                                  .createIssueDataController({
+                                                "facility_id": facilitiData.id!
+                                              });
+                                              issuesProvider.getAssets(context);
+                                              Navigator.pop(context);
+                                            },
+                                            title: Text(
+                                              facilitiData.name ?? "",
+                                              style: TextStyle(
+                                                  color: NewColors.black,
+                                                  fontWeight: mediumFontWeight,
+                                                  fontSize: buildFontSize(30)),
+                                            ),
+                                          )
+                                        : SizedBox();
                                   },
                                 ),
                               );
@@ -301,7 +307,7 @@ class _UnitIssue2State extends State<UnitIssue2> {
                   unitNo.text = unitData.unitNo ?? "";
                   setState(() {});
                   issuesProvider.createIssueDataController(
-                      {"facility_unit_id": unitData.onefmUnitInternalId});
+                      {"facility_unit_id": unitData.id});
 
                   clientName.text = await facilitiesProvider.getClient(context,
                       unitId: unitData.id.toString());
@@ -376,10 +382,8 @@ class _UnitIssue2State extends State<UnitIssue2> {
                       blockId: blockResponse.id!.toString(),
                       floors: blockResponse.floors!);
                 } else {
-                  issuesProvider.createIssueDataController({
-                    "client_id": blockResponse.createdBy ?? "",
-                    "cream_unit": 0
-                  });
+                  issuesProvider.createIssueDataController(
+                      {"client_id": "", "cream_unit": 0});
 
                   issueType = "NON-CREAM";
                   setState(() {});

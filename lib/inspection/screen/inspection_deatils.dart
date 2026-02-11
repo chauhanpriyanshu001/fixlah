@@ -3,6 +3,7 @@ import 'package:fixlah/config/sizes.dart';
 import 'package:fixlah/config/text_fields.dart';
 import 'package:fixlah/config/utils.dart';
 import 'package:fixlah/inspection/screen/inspection_details2.dart';
+import 'package:fixlah/inspection/screen/inspecttion_category_list.dart';
 import 'package:flutter/material.dart';
 
 class InspectionDeatils extends StatefulWidget {
@@ -77,7 +78,8 @@ class _InspectionDeatilsState extends State<InspectionDeatils> {
         child: NxtBtn(
           text: "Next",
           onTap: () {
-            naviagteTo(context, builder: (context) => InspectionDetails2());
+            naviagteTo(context,
+                builder: (context) => InspecttionCategoryList());
           },
         ),
       ),

@@ -1,16 +1,19 @@
+import 'package:fixlah/config/colors.dart';
 import 'package:fixlah/home/model/area_response_model.dart';
 import 'package:fixlah/home/model/issue_categories_data.dart';
 import 'package:fixlah/home/model/issue_type_data.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_device_type/flutter_device_type.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class AppConstants {
   static String appName = "Fixlah";
-  static String baseUrl = "https://fixlah.myila.in/api/";
-  static String issuesImageBaseUrl =
-      "https://fixlah.myila.in/uploads/issue_photos/";
-  static String woImageBaseUrl =
-      "https://fixlah.myila.in/uploads/workorder_photos/";
+  static String baseUrl = "https://staging.fixlah.com.sg/api/";
+  static String assetBaseUrl =
+      "https://fixlah-inspection-test-bucket.s3.ap-southeast-1.amazonaws.com";
+  static String issuesImageBaseUrl = "$assetBaseUrl/uploads/issue_photos/";
+  static String woImageBaseUrl = "$assetBaseUrl/uploads/workorder_photos/";
 }
 
 // Shared Preference Variables Key
@@ -43,6 +46,12 @@ bool checkPermission({required String permit}) {
   if (permissions.contains(permit)) {
     return true;
   } else {
+    Fluttertoast.showToast(
+      msg: "Sorry You Can Not ${permit.toUpperCase()}",
+      textColor: NewColors.whitecolor,
+      backgroundColor: NewColors.red,
+      fontSize: 15.r,
+    );
     return false;
   }
 }

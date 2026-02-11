@@ -53,6 +53,9 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+<string>Your app needs your location to provide you with relevant services, such as nearby results or mapping features.</string>
+
 	<key>io.flutter.embedded_views_preview</key>
 	<true/>
 </dict>

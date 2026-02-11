@@ -313,6 +313,7 @@ class Items {
   int? inspectionCategoryItemId;
   String? condition;
   String? overallGrade;
+  int? overallCompliance;
   String? remarks;
   String? conditionDescription;
   int? createdBy;
@@ -332,6 +333,7 @@ class Items {
       this.inspectionCategoryItemId,
       this.condition,
       this.overallGrade,
+      this.overallCompliance,
       this.remarks,
       this.conditionDescription,
       this.createdBy,
@@ -351,6 +353,7 @@ class Items {
     inspectionCategoryItemId = json['inspection_category_item_id'];
     condition = json['condition'];
     overallGrade = json['overall_grade'];
+    overallCompliance = json['overall_compliance'];
     remarks = json['remarks'];
     conditionDescription = json['condition_description'];
     createdBy = json['created_by'];
@@ -390,6 +393,7 @@ class Items {
     data['inspection_category_item_id'] = inspectionCategoryItemId;
     data['condition'] = condition;
     data['overall_grade'] = overallGrade;
+    data['overall_compliance'] = overallCompliance;
     data['remarks'] = remarks;
     data['condition_description'] = conditionDescription;
     data['created_by'] = createdBy;
@@ -422,6 +426,8 @@ class CategoryItem {
   String? name;
   dynamic referenceImage;
   int? overallGrade;
+  int? overallCompliance;
+
   int? sortOrder;
   int? createdBy;
   int? updatedBy;
@@ -437,6 +443,7 @@ class CategoryItem {
       this.name,
       this.referenceImage,
       this.overallGrade,
+      this.overallCompliance,
       this.sortOrder,
       this.createdBy,
       this.updatedBy,
@@ -452,6 +459,7 @@ class CategoryItem {
     name = json['name'];
     referenceImage = json['reference_image'];
     overallGrade = json['overall_grade'];
+    overallCompliance = json['overall_compliance'];
     sortOrder = json['sort_order'];
     createdBy = json['created_by'];
     updatedBy = json['updated_by'];
@@ -474,6 +482,7 @@ class CategoryItem {
     data['name'] = name;
     data['reference_image'] = referenceImage;
     data['overall_grade'] = overallGrade;
+    data['overall_compliance'] = overallCompliance;
     data['sort_order'] = sortOrder;
     data['created_by'] = createdBy;
     data['updated_by'] = updatedBy;

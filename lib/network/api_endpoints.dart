@@ -21,6 +21,7 @@ class ApiEndpoints {
   static String faceenroll = "face/enroll";
   static String facelogin = "face/login";
   static String inspections = "inspections";
+  static String checkInspections = "inspections/check-duplicate";
   static String signatures = "signatures";
   static String inspectionTemplates = "inspection-templates";
   static String issuePhotos = "issue-photos";

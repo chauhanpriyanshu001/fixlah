@@ -43,7 +43,6 @@ void main() async {
       }
     }
   });
-  // We recommend removing this method after testing and instead use In-App Messages to prompt for notification permission.
 }
 
 class MyApp extends StatelessWidget {
@@ -63,6 +62,7 @@ class MyApp extends StatelessWidget {
           top: false,
           left: false,
           right: false,
+          bottom: false,
           child: MaterialApp(
             navigatorKey: appNavigator,
             debugShowCheckedModeBanner: false,

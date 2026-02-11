@@ -30,6 +30,7 @@ class ApiCall {
             await http.MultipartFile.fromPath(fileParameter!, file[i].path));
       }
     }
+    print("Bearer $accessToken");
     request.headers.addAll({
       "Authorization": "Bearer $accessToken",
       "X-Client-Platform": "android_app",
@@ -134,6 +135,7 @@ ApiResponse handleResponse(context, int? statusCode, response) {
       // naviagteToandreplace(context, builder: (context) => const LoginScreen());
     } else if (statusCode == 400 || statusCode == 409 || statusCode == 406) {
       Map errorResponse = jsonDecode(response);
+
       if (errorResponse['message']
           .toString()
           .contains("Report can only be generated for completed inspections")) {
@@ -149,17 +151,24 @@ ApiResponse handleResponse(context, int? statusCode, response) {
             msg: errorResponse['message'],
             backgroundColor: NewColors.red);
       }
-    }
-    // else if (statusCode == 201) {
-    //     Fluttertoast.showToast(fontSize: 15.r,msg: response['message']);
-    //   apiResponse = ApiResponse.fromJson({
-    //     "statusCode": statusCode,
-    //     "response": jsonDecode(response),
-    //   });
-    // }
-    else if (statusCode == 403) {
+    } else if (statusCode == 422) {
+      Map errorResponse = jsonDecode(response);
+      if (errorResponse['errors'][0]['issues'].length != 0) {
+        Fluttertoast.showToast(
+            fontSize: 20.r,
+            msg: errorResponse['errors'][0]['issues'][0].toString(),
+            textColor: NewColors.whitecolor,
+            backgroundColor: NewColors.red);
+      } else {
+        Fluttertoast.showToast(
+            fontSize: 20.r,
+            msg: errorResponse['message'].toString(),
+            textColor: NewColors.whitecolor,
+            backgroundColor: NewColors.red);
+      }
+    } else if (statusCode == 403) {
       Fluttertoast.showToast(
-          fontSize: 20.r,
+          fontSize: 15.r,
           msg: response['message'],
           textColor: NewColors.whitecolor,
           backgroundColor: NewColors.red);

@@ -35,10 +35,15 @@ class _UnitIssueFinalState extends State<UnitIssueFinal> {
   String selctedUnitLocation = "";
   String selctedissueCategories = "";
   TextEditingController issueItem = TextEditingController();
+  TextEditingController issueRemark = TextEditingController();
   var _key = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
     return Consumer<IssuesProvider>(builder: (context, issuesProvider, child) {
+      if (issuesProvider.createIssue['items[0][remarks]'] != null &&
+          issueRemark.text.isEmpty) {
+        issueRemark.text = issuesProvider.createIssue['items[0][remarks]'];
+      }
       return Consumer<HomeProvider>(builder: (context, homeProvider, child) {
         return Stack(
           children: [
@@ -303,6 +308,11 @@ class _UnitIssueFinalState extends State<UnitIssueFinal> {
                           label: "Issue Item",
                           validator: Validators.validateRequired,
                           hintText: "Enter Issue Item"),
+                      CustomTextFields(
+                          controller: issueRemark,
+                          label: "Issue Remark",
+                          validator: Validators.validateRequired,
+                          hintText: "Enter Issue Remark"),
                       // CustomTextFields(
                       //     label: "Issue Item",
                       //     readOnly: true,
@@ -421,8 +431,10 @@ class _UnitIssueFinalState extends State<UnitIssueFinal> {
                         onTap: () async {
                           log(issuesProvider.createIssue.toString());
                           if (_key.currentState!.validate()) {
-                            issuesProvider.createIssue
-                                .addAll({"items[0][item]": issueItem.text});
+                            issuesProvider.createIssue.addAll({
+                              "items[0][item]": issueItem.text,
+                              "items[0][remarks]": issueRemark.text
+                            });
                             if (issuesProvider.issueType == "Unit") {
                               if (selctedValue != "" &&
                                   selctedUnitLocation != "" &&

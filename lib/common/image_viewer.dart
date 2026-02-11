@@ -1,6 +1,8 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:fixlah/config/colors.dart';
+import 'package:fixlah/inspection/model/inspection_get_model.dart';
+
 import 'package:fixlah/issues/model/issues_model.dart';
 import 'package:flutter/material.dart';
 
@@ -51,14 +53,22 @@ class _ImageViewerState extends State<ImageViewer> {
           child: CarouselSlider.builder(
               itemCount: widget.itemImages!.length,
               itemBuilder: (context, index, realIndex) {
-                Photos photodata = widget.itemImages![index];
+                Photos? photodata;
+
+                if (widget.itemImages.runtimeType == List<Photos>) {
+                  photodata = widget.itemImages![index];
+                }
+                ReferencePhotos? referencePhotos;
+                if (widget.itemImages.runtimeType == List<ReferencePhotos>) {
+                  referencePhotos = widget.itemImages![index];
+                }
 
                 return InteractiveViewer(
                   // maxScale: 1,
                   // minScale: 0.2,
                   child: Image(
                       image: NetworkImage(
-                        "${widget.baseUrl}${photodata.photoPath}",
+                        "${widget.baseUrl}${photodata?.photoPath ?? referencePhotos?.photoUrl}",
                       ),
                       fit: BoxFit.contain),
                 );

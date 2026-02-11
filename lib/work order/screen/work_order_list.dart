@@ -31,20 +31,20 @@ class _WorkOrderListState extends State<WorkOrderList> {
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(() async {
-      if (_scrollController.position.pixels ==
-          _scrollController.position.maxScrollExtent) {
-        WorkOrderProvider workOrderProvider = Provider.of<WorkOrderProvider>(
-          context,
-          listen: false,
-        );
+    // _scrollController.addListener(() async {
+    //   if (_scrollController.position.pixels ==
+    //       _scrollController.position.maxScrollExtent) {
+    //     WorkOrderProvider workOrderProvider = Provider.of<WorkOrderProvider>(
+    //       context,
+    //       listen: false,
+    //     );
 
-        if (workOrderProvider.workOrderList.data?.data?.length.toString() !=
-            workOrderProvider.workOrderList.data?.total!.toString()) {
-          workOrderProvider.getMoreData(context);
-        }
-      }
-    });
+    //     if (workOrderProvider.workOrderList.data?.data?.length.toString() !=
+    //         workOrderProvider.workOrderList.data?.total!.toString()) {
+    //       workOrderProvider.getMoreData(context);
+    //     }
+    //   }
+    // });
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       await Provider.of<WorkOrderProvider>(
         context,
@@ -76,6 +76,7 @@ class _WorkOrderListState extends State<WorkOrderList> {
         String selectedOrder = workOrderProvider.woOrder;
 
         return SingleChildScrollView(
+          controller: _scrollController,
           child: Column(
             children: [
               Container(
@@ -250,19 +251,78 @@ class _WorkOrderListState extends State<WorkOrderList> {
                                   );
                                 },
                               ),
-                    if (workOrderProvider.loadingMore) const LoadinWidget(),
-                    if (!workOrderProvider.loading)
-                      Text(
-                        "${workOrderProvider.workOrderList.data?.data?.length.toString() ?? "-"} of  ${workOrderProvider.workOrderList.data?.total.toString() ?? "-"}",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            color: NewColors.secondattextcolor,
-                            fontWeight: FontWeight.bold,
-                            fontSize: buildFontSize(30)),
-                      )
+                    // if (workOrderProvider.loadingMore) const LoadinWidget(),
+                    // if (!workOrderProvider.loading)
+                    //   Text(
+                    //     "${workOrderProvider.workOrderList.data?.data?.length.toString() ?? "-"} of  ${workOrderProvider.workOrderList.data?.total.toString() ?? "-"}",
+                    //     textAlign: TextAlign.center,
+                    //     style: TextStyle(
+                    //         color: NewColors.secondattextcolor,
+                    //         fontWeight: FontWeight.bold,
+                    //         fontSize: buildFontSize(30)),
+                    //   )
                   ],
                 ),
               ),
+              if (!workOrderProvider.loading)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      textAlign: TextAlign.center,
+                      "Showing Count ${(workOrderProvider.workOrderList.data?.from ?? 0)} - ${(workOrderProvider.workOrderList.data?.to ?? 0)} of  ${workOrderProvider.workOrderList.data?.total ?? 0}\n Page ${workOrderProvider.currentPage} of ${workOrderProvider.workOrderList.data?.lastPage ?? 0}",
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: buildFontSize(25)),
+                    ),
+                    SizedBox(
+                      height: 10.r,
+                    ),
+                    Wrap(
+                      children: List.generate(
+                          workOrderProvider.workOrderList.data?.lastPage ?? 0,
+                          (index) {
+                        return Padding(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 8.r, vertical: 8.r),
+                          child: InkWell(
+                            onTap: () {
+                              _scrollController.jumpTo(
+                                _scrollController.position
+                                    .minScrollExtent, // Target offset 0.0
+                              );
+                              workOrderProvider.getMoreData(context,
+                                  newpage: index + 1);
+                            },
+                            child: Container(
+                                padding: EdgeInsets.symmetric(
+                                    vertical: 10.r, horizontal: 10.r),
+                                decoration: BoxDecoration(
+                                    color: (index + 1) ==
+                                            workOrderProvider.currentPage
+                                        ? NewColors.workordercolor
+                                        : NewColors.whitecolor,
+                                    borderRadius: BorderRadius.circular(10.r)),
+                                child: SizedBox(
+                                  width: 20.r,
+                                  child: Text(
+                                    textAlign: TextAlign.center,
+                                    (index + 1).toString(),
+                                    style: TextStyle(
+                                        color: (index + 1) ==
+                                                workOrderProvider.currentPage
+                                            ? NewColors.whitecolor
+                                            : NewColors.black,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: buildFontSize(25)),
+                                  ),
+                                )),
+                          ),
+                        );
+                      }),
+                    ),
+                  ],
+                ),
             ],
           ),
         );
@@ -297,7 +357,7 @@ class WorkOrderCard extends StatelessWidget {
               image: DecorationImage(
                 fit: BoxFit.cover,
                 image: NetworkImage(workOrderData.workorderPhotos?.length == 0
-                    ? "https://fixlah.myila.in/assets/desktop/img/fixlah-logo.png"
+                    ? "https://staging.fixlah.com.sg/assets/desktop/img/fixlah-logo.png"
                     : "${AppConstants.woImageBaseUrl}${workOrderData.workorderPhotos?[0].photoPath}"),
               ),
             ),

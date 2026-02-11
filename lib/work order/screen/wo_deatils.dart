@@ -21,6 +21,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 
 class WoDeatils extends StatefulWidget {
   final String id;
@@ -537,6 +538,7 @@ class _WoDeatilsState extends State<WoDeatils> {
                               label: "Completion Remarks",
                               controller: remark,
                               validator: Validators.validateRequired,
+                              textInputAction: TextInputAction.done,
                               hintText: "Enter Remark"),
                           SizedBox(
                             height: aspectRatio * 20,
@@ -580,12 +582,10 @@ class _WoDeatilsState extends State<WoDeatils> {
                                               initialTime: const TimeOfDay(
                                                   hour: 12, minute: 00));
                                       if (starTime != null) {
-                                        print(starTime);
-                                        // final f = new DateFormat('yyyy-MM-dd');
-                                        time.text = (starTime.hour.toString() +
-                                                ":" +
-                                                starTime.minute.toString())
-                                            .toString();
+                                        final String time24 =
+                                            '${starTime.hour.toString().padLeft(2, '0')}:${starTime.minute.toString().padLeft(2, '0')}';
+                                        print(time24);
+                                        time.text = time24;
 
                                         setState(() {});
                                       }
@@ -645,17 +645,25 @@ class _WoDeatilsState extends State<WoDeatils> {
                           ),
                           InkWell(
                             onTap: () async {
-                              Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                          builder: (context) =>
-                                              const CompleteionCameraCaptureScreen()))
-                                  .then((value) {
-                                if (value != null && value != "") {
-                                  files.add(value);
-                                  setState(() {});
-                                }
-                              });
+                              if (files.length < 10) {
+                                Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                const CompleteionCameraCaptureScreen()))
+                                    .then((value) {
+                                  if (value != null && value != "") {
+                                    files.add(value);
+                                    setState(() {});
+                                  }
+                                });
+                              } else {
+                                Fluttertoast.showToast(
+                                    fontSize: 15.r,
+                                    textColor: NewColors.whitecolor,
+                                    backgroundColor: NewColors.red,
+                                    msg: "Limit Reached");
+                              }
                             },
                             child: Container(
                               padding: const EdgeInsets.symmetric(vertical: 15),

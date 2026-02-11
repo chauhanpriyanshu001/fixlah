@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:fixlah/config/colors.dart';
@@ -26,12 +25,11 @@ class FacilitiesProvider extends ChangeNotifier {
   ClientData selectedClient = ClientData();
 
   List selectedFacilitiesName = [];
-  List<String> facilitiesImages = [
-    "assets/facilities/fac_1.png",
-    "assets/facilities/fac_2.png",
-    "assets/facilities/fac_3.png",
-    "assets/facilities/fac_4.png",
-    "assets/facilities/fac_5.png",
+  List<Map> facilitiesImages = [
+    {"value": "leo", "image": "assets/facilities/fac_4.png"},
+    {"value": "bsd", "image": "assets/facilities/fac_2.png"},
+    {"value": "jpd1", "image": "assets/facilities/fac_1.png"},
+    {"value": "jpd2", "image": "assets/facilities/fac_3.png"},
   ];
 // Location Tag data list
   List<LocationTagData> locationtaglist = [];

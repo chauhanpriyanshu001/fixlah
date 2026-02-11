@@ -2,6 +2,7 @@
 import 'dart:developer';
 
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:fixlah/common/image_viewer.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -96,7 +97,9 @@ class _InspectionItemState extends State<InspectionItem> {
             ? "Very Clean"
             : data.overallGrade == "B"
                 ? "Meet Min Std"
-                : "Need Re-Cleaning";
+                : data.overallGrade == "C"
+                    ? "Need Re-Cleaning"
+                    : "Not Applicable";
       }
       loading = false;
       setState(() {});
@@ -109,44 +112,70 @@ class _InspectionItemState extends State<InspectionItem> {
     super.dispose();
   }
 
-  bool validation(Items data) {
+  bool? validation(Items data) {
     bool? status;
-    if (formKey.currentState!.validate() && selected != "") {
-      status = true;
-      if (selected != "Not Applicable") {
-        body.addAll({"remarks": remark.text});
-        if (selected == "Pass" && data.goodPhotos?.length == 0) {
-          Fluttertoast.showToast(
-            msg: "Add Good Photo to Continue",
-            textColor: NewColors.whitecolor,
-            backgroundColor: NewColors.red,
-            fontSize: 15.r,
-          );
-          status = false;
-        }
-        if (selected == "Fail") {
-          if (data.afterPhotos?.length == 0 || data.beforePhotos?.length == 0) {
+    if (data.categoryItem?.overallGrade == 0 &&
+        data.categoryItem?.overallCompliance == 1) {
+      if (selected != "") {
+        status = true;
+      }
+    } else {
+      if (data.categoryItem?.overallGrade == 1 &&
+          selected == "Not Applicable" &&
+          selected != "") {
+        if (selected != "") {
+          status = true;
+        } else {
+          if (selected == "") {
             Fluttertoast.showToast(
-              msg: "Add Photo to Continue",
+              msg: "Please Select Option",
               textColor: NewColors.whitecolor,
               backgroundColor: NewColors.red,
               fontSize: 15.r,
             );
-            status = false;
           }
+          status = false;
+        }
+      } else {
+        if (formKey.currentState!.validate() && selected != "") {
+          status = true;
+          if (selected != "Not Applicable") {
+            body.addAll({"remarks": remark.text});
+            if (selected == "Pass" && data.goodPhotos?.length == 0) {
+              Fluttertoast.showToast(
+                msg: "Add Good Photo to Continue",
+                textColor: NewColors.whitecolor,
+                backgroundColor: NewColors.red,
+                fontSize: 15.r,
+              );
+              status = false;
+            }
+            // if (selected == "Fail") {
+            //   if (data.afterPhotos?.length == 0 || data.beforePhotos?.length == 0) {
+            //     Fluttertoast.showToast(
+            //       msg: "Add Photo to Continue",
+            //       textColor: NewColors.whitecolor,
+            //       backgroundColor: NewColors.red,
+            //       fontSize: 15.r,
+            //     );
+            //     status = false;
+            //   }
+            // }
+          }
+        } else {
+          if (selected == "") {
+            Fluttertoast.showToast(
+              msg: "Please Select Option",
+              textColor: NewColors.whitecolor,
+              backgroundColor: NewColors.red,
+              fontSize: 15.r,
+            );
+          }
+          status = false;
         }
       }
-    } else {
-      if (selected == "") {
-        Fluttertoast.showToast(
-          msg: "Please Select Option",
-          textColor: NewColors.whitecolor,
-          backgroundColor: NewColors.red,
-          fontSize: 15.r,
-        );
-      }
-      status = false;
     }
+
     return status;
   }
 
@@ -167,7 +196,7 @@ class _InspectionItemState extends State<InspectionItem> {
                   actions: [
                     IconButton(
                         onPressed: () {
-                          if (validation(data)) {
+                          if (validation(data)!) {
                             log(body.toString());
                             inspectionProvider.saveItem(context,
                                 inspectionId: data.inspectionId!,
@@ -228,15 +257,28 @@ class _InspectionItemState extends State<InspectionItem> {
                                               .categoryItem!
                                               .referencePhotos![index]
                                               .photoUrl!;
-                                          return Container(
-                                            decoration: BoxDecoration(
-                                                borderRadius:
-                                                    BorderRadius.circular(30),
-                                                image: DecorationImage(
-                                                    fit: BoxFit.cover,
-                                                    image: NetworkImage(url))),
-                                            width: 200.r,
-                                            height: 200.r,
+                                          return InkWell(
+                                            onTap: () {
+                                              naviagteTo(context,
+                                                  builder: (context) =>
+                                                      ImageViewer(
+                                                          index: index,
+                                                          itemImages: data
+                                                              .categoryItem!
+                                                              .referencePhotos!,
+                                                          baseUrl: ""));
+                                            },
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                  borderRadius:
+                                                      BorderRadius.circular(30),
+                                                  image: DecorationImage(
+                                                      fit: BoxFit.cover,
+                                                      image:
+                                                          NetworkImage(url))),
+                                              width: fullWidth,
+                                              height: 200.r,
+                                            ),
                                           );
                                         },
                                         options: CarouselOptions(
@@ -270,7 +312,8 @@ class _InspectionItemState extends State<InspectionItem> {
                           ),
 
                           // Overall Grade == 0 then Show : Good, Not Good, Not Applicable
-                          if (data.categoryItem?.overallGrade == 0)
+                          if (data.categoryItem?.overallGrade == 0 &&
+                              data.categoryItem?.overallCompliance != 1)
                             Column(
                               children: [
                                 // Status
@@ -364,7 +407,7 @@ class _InspectionItemState extends State<InspectionItem> {
                                               InkWell(
                                                 onTap: () async {
                                                   if (data.goodPhotos?.length !=
-                                                      10) {
+                                                      5) {
                                                     Navigator.push(
                                                         context,
                                                         MaterialPageRoute(
@@ -391,6 +434,14 @@ class _InspectionItemState extends State<InspectionItem> {
                                                         setState(() {});
                                                       }
                                                     });
+                                                  } else {
+                                                    Fluttertoast.showToast(
+                                                        fontSize: 15.r,
+                                                        textColor: NewColors
+                                                            .whitecolor,
+                                                        backgroundColor:
+                                                            NewColors.red,
+                                                        msg: "Limit Reached");
                                                   }
                                                 },
                                                 child: const AddPhotoBtn(
@@ -531,7 +582,7 @@ class _InspectionItemState extends State<InspectionItem> {
                                                 onTap: () {
                                                   if (data.beforePhotos
                                                           ?.length !=
-                                                      10) {
+                                                      5) {
                                                     Navigator.push(
                                                         context,
                                                         MaterialPageRoute(
@@ -558,6 +609,14 @@ class _InspectionItemState extends State<InspectionItem> {
                                                         setState(() {});
                                                       }
                                                     });
+                                                  } else {
+                                                    Fluttertoast.showToast(
+                                                        fontSize: 15.r,
+                                                        textColor: NewColors
+                                                            .whitecolor,
+                                                        backgroundColor:
+                                                            NewColors.red,
+                                                        msg: "Limit Reached");
                                                   }
                                                 },
                                                 child: const AddPhotoBtn(
@@ -617,7 +676,7 @@ class _InspectionItemState extends State<InspectionItem> {
                                                 onTap: () {
                                                   if (data.afterPhotos
                                                           ?.length !=
-                                                      10) {
+                                                      5) {
                                                     Navigator.push(
                                                         context,
                                                         MaterialPageRoute(
@@ -644,6 +703,14 @@ class _InspectionItemState extends State<InspectionItem> {
                                                         setState(() {});
                                                       }
                                                     });
+                                                  } else {
+                                                    Fluttertoast.showToast(
+                                                        fontSize: 15.r,
+                                                        textColor: NewColors
+                                                            .whitecolor,
+                                                        backgroundColor:
+                                                            NewColors.red,
+                                                        msg: "Limit Reached");
                                                   }
                                                 },
                                                 child: const AddPhotoBtn(
@@ -789,15 +856,197 @@ class _InspectionItemState extends State<InspectionItem> {
                                       SizedBox(
                                         height: 5.r,
                                       ),
-                                      Form(
-                                        key: formKey,
-                                        child: CustomTextFields(
-                                            label: "Remarks",
-                                            controller: remark,
-                                            validator:
-                                                Validators.validateRequired,
-                                            hintText: "Enter Remark"),
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: StatusTab(
+                                              value: selected,
+                                              icon: Container(
+                                                width: 25.r,
+                                                height: 25.r,
+                                                decoration: const BoxDecoration(
+                                                    color: NewColors
+                                                        .inspectionscolor,
+                                                    shape: BoxShape.circle),
+                                                child: Center(
+                                                    child: Text(
+                                                  "N",
+                                                  style: TextStyle(
+                                                      fontSize:
+                                                          buildFontSize(30),
+                                                      color:
+                                                          NewColors.whitecolor,
+                                                      fontWeight:
+                                                          FontWeight.w500),
+                                                )),
+                                              ),
+                                              onTap: () {
+                                                selected = "Not Applicable";
+                                                body.addAll({
+                                                  "overall_grade":
+                                                      "Not Applicable"
+                                                });
+
+                                                setState(() {});
+                                              },
+                                              title: "Not Applicable",
+                                            ),
+                                          ),
+                                          const SizedBox(
+                                            width: 5,
+                                          ),
+                                        ],
                                       ),
+                                      SizedBox(
+                                        height: 5.r,
+                                      ),
+                                      if (selected != "" &&
+                                          selected != "Not Applicable")
+                                        Form(
+                                          key: formKey,
+                                          child: Column(
+                                            children: [
+                                              CustomTextFields(
+                                                  label: "Remarks",
+                                                  controller: remark,
+                                                  validator: Validators
+                                                      .validateRequired,
+                                                  hintText: "Enter Remark"),
+                                            ],
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          // yes no
+                          if (data.categoryItem?.overallCompliance == 1)
+                            Column(
+                              children: [
+                                // Options
+
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      vertical: 15.r, horizontal: 30.r),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      headingField(title: "Select Compliance"),
+                                      SizedBox(
+                                        height: 5.r,
+                                      ),
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: StatusTab(
+                                              value: selected,
+                                              icon: Container(
+                                                width: 25.r,
+                                                height: 25.r,
+                                                decoration: const BoxDecoration(
+                                                    color: NewColors.greencolor,
+                                                    shape: BoxShape.circle),
+                                                child: Center(
+                                                    child: Text(
+                                                  "",
+                                                  style: TextStyle(
+                                                      fontSize:
+                                                          buildFontSize(30),
+                                                      color:
+                                                          NewColors.whitecolor,
+                                                      fontWeight:
+                                                          FontWeight.w500),
+                                                )),
+                                              ),
+                                              onTap: () {
+                                                selected = "Yes";
+                                                body.addAll({
+                                                  "overall_compliance": "1"
+                                                });
+                                                setState(() {});
+                                              },
+                                              title: "Yes",
+                                            ),
+                                          ),
+                                          const SizedBox(
+                                            width: 5,
+                                          ),
+                                          Expanded(
+                                            child: StatusTab(
+                                              value: selected,
+                                              icon: Container(
+                                                width: 25.r,
+                                                height: 25.r,
+                                                decoration: const BoxDecoration(
+                                                    color: NewColors.red,
+                                                    shape: BoxShape.circle),
+                                                child: Center(
+                                                    child: Text(
+                                                  "",
+                                                  style: TextStyle(
+                                                      fontSize:
+                                                          buildFontSize(30),
+                                                      color:
+                                                          NewColors.whitecolor,
+                                                      fontWeight:
+                                                          FontWeight.w500),
+                                                )),
+                                              ),
+                                              onTap: () {
+                                                selected = "No";
+                                                body.addAll({
+                                                  "overall_compliance": "0"
+                                                });
+                                                setState(() {});
+                                              },
+                                              title: "No",
+                                            ),
+                                          ),
+                                          const SizedBox(
+                                            width: 5,
+                                          ),
+                                        ],
+                                      ),
+                                      SizedBox(
+                                        height: 10.r,
+                                      ),
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: StatusTab(
+                                              value: selected,
+                                              icon: Container(
+                                                width: 25.r,
+                                                height: 25.r,
+                                                decoration: const BoxDecoration(
+                                                    color: NewColors.primary,
+                                                    shape: BoxShape.circle),
+                                                child: Center(
+                                                    child: Text(
+                                                  "",
+                                                  style: TextStyle(
+                                                      fontSize:
+                                                          buildFontSize(30),
+                                                      color:
+                                                          NewColors.whitecolor,
+                                                      fontWeight:
+                                                          FontWeight.w500),
+                                                )),
+                                              ),
+                                              onTap: () {
+                                                selected = "Not Applicable";
+                                                body.addAll({
+                                                  "overall_compliance": "2"
+                                                });
+                                                setState(() {});
+                                              },
+                                              title: "Not Applicable",
+                                            ),
+                                          ),
+                                        ],
+                                      )
                                     ],
                                   ),
                                 ),

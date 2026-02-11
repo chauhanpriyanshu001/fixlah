@@ -3,17 +3,23 @@ import 'dart:developer';
 
 import 'package:fixlah/config/colors.dart';
 import 'package:fixlah/config/constants.dart';
+import 'package:fixlah/config/sizes.dart';
 import 'package:fixlah/config/utils.dart';
+import 'package:fixlah/facilities/model/facilities_model.dart';
 import 'package:fixlah/facilities/model/location_tag_model.dart';
 import 'package:fixlah/home/screen/home_screen.dart';
+import 'package:fixlah/inspection/model/inspection_categories_item_data.dart'
+    as iPCD;
 import 'package:fixlah/inspection/model/inspection_get_model.dart';
 import 'package:fixlah/inspection/model/inspection_response_model.dart'
     hide Data;
-import 'package:fixlah/inspection/model/inspection_toRun_model.dart' hide Data;
+import 'package:fixlah/inspection/model/inspection_toRun_model.dart'
+    hide Data, Categories;
 import 'package:fixlah/inspection/screen/inspection_details2.dart';
 import 'package:fixlah/inspection/screen/inspection_item.dart';
 import 'package:fixlah/inspection/screen/inspection_report.dart';
 import 'package:fixlah/inspection/screen/inspectipn_scanner.dart';
+import 'package:fixlah/inspection/screen/inspecttion_category_list.dart';
 import 'package:fixlah/network/api_call.dart';
 import 'package:fixlah/network/api_endpoints.dart';
 import 'package:fixlah/network/response_model.dart';
@@ -22,6 +28,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:http/http.dart' as http;
 
 class InspectionProvider extends ChangeNotifier {
   // Tab status
@@ -44,16 +51,20 @@ class InspectionProvider extends ChangeNotifier {
   InspectionResponse inspectionResponse = InspectionResponse();
   // In Progress Selected Inspection Data
   InspectionGetData inspectionData = InspectionGetData();
+  // In Progress Selected Inspection Data with categories and item
+  iPCD.InspectionCategoryitemData inspectionCategoryData =
+      iPCD.InspectionCategoryitemData();
   // To Run Data response
   InspectionToRunResponse inspectionToRunResponse = InspectionToRunResponse();
   // Select to run data
   InspectionDataItem toRuninspectionData = InspectionDataItem();
   // selected Inspection item
   Items selctedItem = Items();
+  iPCD.CategoryNewData selctedCategory = iPCD.CategoryNewData();
   // Inspection Type
   String inspectiontype = "";
   // Custom Facilities filter
-  String? customFac;
+  List? customFac;
   // Unit Specific filter for "To Run" tab
   String unitSpecific = "Unit Inspections";
   // Qr data
@@ -71,7 +82,7 @@ class InspectionProvider extends ChangeNotifier {
     if (tabStatusValue == "") {
       ApiResponse apiResponse = await ApiCall.getApi(context,
           endpoint:
-              "${ApiEndpoints.inspectionTemplates}?page=$page&search=$search&facility_ids=${customFac ?? selectedFacilities.join(",")}&unit_specific=${unitSpecific.replaceFirst("Inspections", "")}");
+              "${ApiEndpoints.inspectionTemplates}?page=$page&search=$search&facility_ids=${customFac?.length != 0 && customFac != null ? customFac?.join(",") : selectedFacilities.join(",")}&unit_specific=${unitSpecific.replaceFirst("Inspections", "")}");
       if (apiResponse.statusCode == 200) {
         inspectionToRunResponse = InspectionToRunResponse();
 
@@ -82,7 +93,7 @@ class InspectionProvider extends ChangeNotifier {
     } else {
       ApiResponse apiResponse = await ApiCall.getApi(context,
           endpoint:
-              "${ApiEndpoints.inspections}?status=$tabStatusValue&page=$page&search=$search&facility_ids=${customFac ?? selectedFacilities.join(",")}&second_inspection=$secondInspection");
+              "${ApiEndpoints.inspections}?status=$tabStatusValue&page=$page&search=$search&facility_ids=${customFac?.length != 0 && customFac != null ? customFac?.join(",") : selectedFacilities.join(",")}&second_inspection=$secondInspection");
       if (apiResponse.statusCode == 200) {
         inspectionResponse = InspectionResponse();
         inspectionResponse = InspectionResponse.fromJson(apiResponse.response);
@@ -95,39 +106,45 @@ class InspectionProvider extends ChangeNotifier {
   }
 
   // get More Inspection data ( Other Page Data )
-  Future getMoreData(context) async {
-    loadingMore = true;
-    page = page + 1;
+  Future getMoreData(context, {required int newpage}) async {
+    loading = true;
+    page = newpage;
     notifyListeners();
     if (tabStatusValue == "") {
       ApiResponse apiResponse = await ApiCall.getApi(context,
           endpoint:
-              "${ApiEndpoints.inspectionTemplates}?page=$page&search=$search&facility_ids=${customFac ?? selectedFacilities.join(",")}&unit_specific=${unitSpecific.replaceFirst("Inspections", "")}");
+              "${ApiEndpoints.inspectionTemplates}?page=$page&search=$search&facility_ids=${customFac?.length != 0 && customFac != null ? customFac?.join(",") : selectedFacilities.join(",")}&unit_specific=${unitSpecific.replaceFirst("Inspections", "")}");
       if (apiResponse.statusCode == 200) {
-        InspectionToRunResponse tempinspectionToRunResponse =
+        inspectionToRunResponse = InspectionToRunResponse();
+
+        inspectionToRunResponse =
             InspectionToRunResponse.fromJson(apiResponse.response);
-        for (var i = 0;
-            i < tempinspectionToRunResponse.data!.data!.length;
-            i++) {
-          inspectionToRunResponse.data!.data!
-              .add(tempinspectionToRunResponse.data!.data![i]);
-        }
+        // InspectionToRunResponse tempinspectionToRunResponse =
+        //     InspectionToRunResponse.fromJson(apiResponse.response);
+        // for (var i = 0;
+        //     i < tempinspectionToRunResponse.data!.data!.length;
+        //     i++) {
+        //   inspectionToRunResponse.data!.data!
+        //       .add(tempinspectionToRunResponse.data!.data![i]);
+        // }
       }
     } else {
       ApiResponse apiResponse = await ApiCall.getApi(context,
           endpoint:
-              "${ApiEndpoints.inspections}?status=$tabStatusValue&page=$page&search=$search&facility_ids=${customFac ?? selectedFacilities.join(",")}&second_inspection=$secondInspection");
+              "${ApiEndpoints.inspections}?status=$tabStatusValue&page=$page&search=$search&facility_ids=${customFac?.length != 0 && customFac != null ? customFac?.join(",") : selectedFacilities.join(",")}&second_inspection=$secondInspection");
       if (apiResponse.statusCode == 200) {
-        InspectionResponse tempinspectionResponse =
-            InspectionResponse.fromJson(apiResponse.response);
-        for (var i = 0; i < tempinspectionResponse.data!.data!.length; i++) {
-          inspectionResponse.data!.data!
-              .add(tempinspectionResponse.data!.data![i]);
-        }
+        inspectionResponse = InspectionResponse();
+        inspectionResponse = InspectionResponse.fromJson(apiResponse.response);
+        // InspectionResponse tempinspectionResponse =
+        //     InspectionResponse.fromJson(apiResponse.response);
+        // for (var i = 0; i < tempinspectionResponse.data!.data!.length; i++) {
+        //   inspectionResponse.data!.data!
+        //       .add(tempinspectionResponse.data!.data![i]);
+        // }
       }
     }
 
-    loadingMore = false;
+    loading = false;
     notifyListeners();
   }
 
@@ -152,9 +169,17 @@ class InspectionProvider extends ChangeNotifier {
   }
 
   // Inspection Data in progress
-  selectInspection(context, {required String id}) {
+  selectInspection(context, {required String id}) async {
     getInspection(context, inspectionId: id.toString());
-    naviagteTo(context, builder: (context) => const InspectionDetails2());
+    naviagteTo(
+      context,
+      builder: (context) => const InspecttionCategoryList(),
+      onValue: (val) {
+        if (val == true) {
+          Navigator.pop(context, true);
+        }
+      },
+    );
     notifyListeners();
   }
 
@@ -174,10 +199,10 @@ class InspectionProvider extends ChangeNotifier {
       ApiResponse apiResponse = await ApiCall.postApi(context,
           endpoint: ApiEndpoints.inspections, body: body);
       if (apiResponse.statusCode == 201 || apiResponse.statusCode == 200) {
-        inspectionToRunResponse.data?.data?.remove(toRuninspectionData);
-        statusCount = statusCount - 1;
-        log(apiResponse.statusCode.toString());
-        log(jsonEncode(apiResponse.response));
+        // inspectionToRunResponse.data?.data?.remove(toRuninspectionData);
+        // statusCount = statusCount - 1;
+        // log(apiResponse.statusCode.toString());
+        // log(jsonEncode(apiResponse.response));
 
         Fluttertoast.showToast(
             backgroundColor: NewColors.greencolor,
@@ -186,9 +211,10 @@ class InspectionProvider extends ChangeNotifier {
             msg: apiResponse.response['message'].toString());
         await getInspection(context,
             inspectionId: apiResponse.response['data']['id'].toString());
-        Navigator.push(context,
-                MaterialPageRoute(builder: (context) => InspectionDetails2()))
-            .then((value) {
+        Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => InspecttionCategoryList())).then((value) {
           if (value == true) {
             Navigator.pop(context, true);
           }
@@ -196,6 +222,61 @@ class InspectionProvider extends ChangeNotifier {
       }
     } catch (e) {
       log("Error Creating Inspection");
+      log(e.toString());
+    } finally {
+      loading = false;
+      notifyListeners();
+    }
+  }
+
+  // check duplicate template
+  Future checkDuplicate(context,
+      {required Map<String, dynamic> body,
+      required Map<String, dynamic> inspbody}) async {
+    try {
+      loading = true;
+      notifyListeners();
+      ApiResponse apiResponse = await ApiCall.postApi(context,
+          endpoint: ApiEndpoints.checkInspections, body: body);
+      if (apiResponse.statusCode == 200 || apiResponse.statusCode == 201) {
+        if (apiResponse.response['is_duplicate'].toString() == "true") {
+          await openDialogue(context,
+              title: "An inspection already exists with same template",
+              data: SizedBox(
+                width: fullWidth - 100,
+                height: fullHeight / 5,
+                child: ConfirmationWidget(
+                  title:
+                      "Would like to continue with the existing inspection ?",
+                  onTapNo: () {
+                    Navigator.pop(context, true);
+                    selectTab(context, newtabStatus: "In Progress");
+                  },
+                  onTapYes: () {
+                    // edit save api call
+
+                    Navigator.pop(context, false);
+                  },
+                ),
+              )).then((val) {
+            if (val != null) {
+              if (val == true) {
+                Navigator.pop(context, true);
+              }
+              if (val == false) {
+                selectInspection(context,
+                    id: apiResponse.response['data']['id'].toString());
+              }
+            }
+          });
+        } else {
+          inspbody.addAll({"force_new": 0});
+
+          createInspection(context, body: inspbody);
+        }
+      }
+    } catch (e) {
+      log("Error Checking Inspection");
       log(e.toString());
     } finally {
       loading = false;
@@ -214,6 +295,12 @@ class InspectionProvider extends ChangeNotifier {
         inspectionData = InspectionGetData();
         log(jsonEncode(apiResponse.response));
         inspectionData = InspectionGetData.fromJson(apiResponse.response);
+        ApiResponse apiResponse2 = await ApiCall.getApi(context,
+            endpoint: "${ApiEndpoints.inspections}/$inspectionId/categories");
+        if (apiResponse2.statusCode == 200) {
+          inspectionCategoryData =
+              iPCD.InspectionCategoryitemData.fromJson(apiResponse2.response);
+        }
       }
     } catch (e) {
       log("Error in Geting inspection deatils");
@@ -222,6 +309,14 @@ class InspectionProvider extends ChangeNotifier {
       loading = false;
       notifyListeners();
     }
+  }
+
+  // select inspection Category
+  selectInspectionCategory(context,
+      {required iPCD.CategoryNewData chossenCategory}) {
+    selctedCategory = chossenCategory;
+    notifyListeners();
+    naviagteTo(context, builder: (context) => const InspectionItemList());
   }
 
   // select inspection item
@@ -256,6 +351,8 @@ class InspectionProvider extends ChangeNotifier {
         selctedItem.overallGrade =
             apiResponse.response['data']['overall_grade'];
         selctedItem.remarks = apiResponse.response['data']['remarks'];
+        selctedItem.overallCompliance =
+            apiResponse.response['data']['overall_compliance'];
         Navigator.pop(context);
       }
     } catch (e) {
@@ -359,7 +456,8 @@ class InspectionProvider extends ChangeNotifier {
     bool navigate = true;
     for (var i = 0; i < inspectionData.data!.items!.length; i++) {
       if (inspectionData.data!.items![i].condition == null &&
-          inspectionData.data!.items![i].overallGrade == null) {
+          inspectionData.data!.items![i].overallGrade == null &&
+          inspectionData.data!.items![i].overallCompliance == null) {
         navigate = false;
         break;
       }
@@ -407,6 +505,8 @@ class InspectionProvider extends ChangeNotifier {
           context,
           builder: (context) => const HomeScreen(),
         );
+      } else {
+        Navigator.pop(context);
       }
     } catch (e) {
       log("Error in Signing Inspection");
@@ -419,7 +519,40 @@ class InspectionProvider extends ChangeNotifier {
 
   // Select custom Filter
   selectFilter(context, {required String id}) {
-    customFac = id;
+    if (customFac != null) {
+      if (customFac!.contains(id)) {
+        customFac!.remove(id);
+      } else {
+        customFac!.add(id);
+      }
+    } else {
+      customFac = [id];
+    }
+    log(customFac.toString());
+    notifyListeners();
+    getData(context);
+  }
+
+  // All Filter
+
+  allFilter(context, {required List<FacilityData>? facilitiList}) {
+    if (customFac != null) {
+      if (customFac?.length == facilitiList?.length) {
+        customFac!.clear();
+      } else {
+        customFac!.clear();
+        for (var i = 0; i < facilitiList!.length; i++) {
+          customFac!.add(facilitiList[i].id.toString());
+        }
+      }
+    } else {
+      // customFac?.clear();
+      customFac = [facilitiList![0].id.toString()];
+      for (var i = 1; i < facilitiList.length; i++) {
+        customFac?.add(facilitiList[i].id.toString());
+      }
+    }
+    notifyListeners();
     getData(context);
   }
 
@@ -458,7 +591,7 @@ class InspectionProvider extends ChangeNotifier {
       notifyListeners();
       ApiResponse apiResponse = await ApiCall.getApi(context,
           endpoint: ApiEndpoints.inspections +
-              "?status=in_progress&include_counts=1");
+              "?status=in_progress&include_counts=1&facility_ids=${customFac?.length != 0 && customFac != null ? customFac?.join(",") : selectedFacilities.join(",")}");
       if (apiResponse.statusCode == 200) {
         log(apiResponse.response.toString());
         inProgressCount = apiResponse.response['data']['total'];
@@ -466,7 +599,7 @@ class InspectionProvider extends ChangeNotifier {
       }
       ApiResponse apiResponse2 = await ApiCall.getApi(context,
           endpoint: ApiEndpoints.inspections +
-              "?status=in_progress&include_counts=1&second_inspection=1");
+              "?status=in_progress&include_counts=1&second_inspection=1&facility_ids=${customFac?.length != 0 && customFac != null ? customFac?.join(",") : selectedFacilities.join(",")}");
       if (apiResponse2.statusCode == 200) {
         log(apiResponse2.response.toString());
         InspectionCount = apiResponse2.response['data']['total'];
@@ -486,9 +619,25 @@ class InspectionProvider extends ChangeNotifier {
     try {
       loading = true;
       notifyListeners();
-      ApiResponse apiResponse = await ApiCall.getApi(context,
-          endpoint: ApiEndpoints.inspections +
-              "/${inspection?.id.toString()}/reports/status");
+      var request = await http.get(
+        Uri.parse(
+          AppConstants.baseUrl +
+              ApiEndpoints.inspections +
+              "/${inspection?.id.toString()}/reports/status",
+        ),
+        headers: {
+          "Authorization": "Bearer $accessToken",
+          "X-Client-Platform": "android_app",
+          "Content-Type": "multipart/form-data"
+        },
+      );
+      ApiResponse apiResponse = ApiResponse(
+          statusCode: request.statusCode, response: jsonDecode(request.body));
+      log("Checking Inspection Report");
+      log(AppConstants.baseUrl +
+          ApiEndpoints.inspections +
+          "/${inspection?.id.toString()}/reports/status");
+      log(apiResponse.statusCode.toString());
       if (apiResponse.statusCode == 200) {
         log(apiResponse.response.toString());
         if (apiResponse.response['report_status'] == "generated") {

@@ -86,29 +86,23 @@ class WorkOrderProvider extends ChangeNotifier {
     }
   }
 
-  Future getMoreData(context) async {
+  Future getMoreData(context, {required int newpage}) async {
     try {
-      loadingMore = true;
-      currentPage = currentPage + 1;
+      loading = true;
+      currentPage = newpage;
       notifyListeners();
       ApiResponse apiResponse = await ApiCall.getApi(context,
           endpoint:
               "${ApiEndpoints.workOrder}?facility_ids=${selectedFacilities.join(",")}&page=$currentPage&status=$woType&priority=${tabStatus.toLowerCase().replaceAll(" ", "")}&search=$search");
 
       if (apiResponse.statusCode == 200) {
-        WorkOrderList tempissuesList =
-            WorkOrderList.fromJson(apiResponse.response!);
-
-        for (var i = 0; i < tempissuesList.data!.data!.length; i++) {
-          WorkOrderData issueData = tempissuesList.data!.data![i];
-          workOrderList.data!.data!.add(issueData);
-          notifyListeners();
-        }
-        statusCount = workOrderList.data!.total ?? 0;
-        print(workOrderList.data!.data!.length);
+        workOrderList = WorkOrderList();
+        workOrderList = WorkOrderList.fromJson(apiResponse.response!);
         if (filter != "ALL") {
           // Check for filter
           List<WorkOrderData> newDataList = [];
+          statusCount = workOrderList.data!.total!;
+
           for (var i = 0; i < workOrderList.data!.data!.length; i++) {
             if (filter == "CREAM") {
               if (workOrderList.data!.data![i].creamUnit == 1) {
@@ -123,12 +117,40 @@ class WorkOrderProvider extends ChangeNotifier {
           }
           workOrderList.data!.data = newDataList;
         }
+        notifyListeners();
+        // WorkOrderList tempissuesList =
+        //     WorkOrderList.fromJson(apiResponse.response!);
+
+        // for (var i = 0; i < tempissuesList.data!.data!.length; i++) {
+        //   WorkOrderData issueData = tempissuesList.data!.data![i];
+        //   workOrderList.data!.data!.add(issueData);
+        //   notifyListeners();
+        // }
+        // statusCount = workOrderList.data!.total ?? 0;
+        // print(workOrderList.data!.data!.length);
+        // if (filter != "ALL") {
+        //   // Check for filter
+        //   List<WorkOrderData> newDataList = [];
+        //   for (var i = 0; i < workOrderList.data!.data!.length; i++) {
+        //     if (filter == "CREAM") {
+        //       if (workOrderList.data!.data![i].creamUnit == 1) {
+        //         newDataList.add(workOrderList.data!.data![i]);
+        //       }
+        //     }
+        //     if (filter == "NON-CREAM") {
+        //       if (workOrderList.data!.data![i].creamUnit == 0) {
+        //         newDataList.add(workOrderList.data!.data![i]);
+        //       }
+        //     }
+        //   }
+        //   workOrderList.data!.data = newDataList;
+        // }
       }
     } catch (e) {
       print("This is error");
       print(e.toString());
     } finally {
-      loadingMore = false;
+      loading = false;
       notifyListeners();
     }
   }

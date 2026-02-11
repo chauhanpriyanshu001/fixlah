@@ -36,31 +36,31 @@ class _InspectionListState extends State<InspectionList> {
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(() async {
-      if (_scrollController.position.pixels ==
-          _scrollController.position.maxScrollExtent) {
-        InspectionProvider inspectionProvider = Provider.of<InspectionProvider>(
-          context,
-          listen: false,
-        );
-        String selectedFilter = inspectionProvider.tabStatus;
-        if (selectedFilter == "In Progress") {
-          if (inspectionProvider.inspectionResponse.data?.data?.length
-                  .toString() !=
-              inspectionProvider.inspectionResponse.data?.total!.toString()) {
-            inspectionProvider.getMoreData(context);
-          }
-        }
-        if (selectedFilter == "To Run") {
-          if (inspectionProvider.inspectionToRunResponse.data?.data?.length
-                  .toString() !=
-              inspectionProvider.inspectionToRunResponse.data?.total!
-                  .toString()) {
-            inspectionProvider.getMoreData(context);
-          }
-        }
-      }
-    });
+    // _scrollController.addListener(() async {
+    //   if (_scrollController.position.pixels ==
+    //       _scrollController.position.maxScrollExtent) {
+    //     InspectionProvider inspectionProvider = Provider.of<InspectionProvider>(
+    //       context,
+    //       listen: false,
+    //     );
+    //     String selectedFilter = inspectionProvider.tabStatus;
+    //     if (selectedFilter == "In Progress") {
+    //       if (inspectionProvider.inspectionResponse.data?.data?.length
+    //               .toString() !=
+    //           inspectionProvider.inspectionResponse.data?.total!.toString()) {
+    //         inspectionProvider.getMoreData(context);
+    //       }
+    //     }
+    //     if (selectedFilter == "To Run") {
+    //       if (inspectionProvider.inspectionToRunResponse.data?.data?.length
+    //               .toString() !=
+    //           inspectionProvider.inspectionToRunResponse.data?.total!
+    //               .toString()) {
+    //         inspectionProvider.getMoreData(context);
+    //       }
+    //     }
+    //   }
+    // });
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       await Provider.of<InspectionProvider>(
         context,
@@ -279,8 +279,10 @@ class _InspectionListState extends State<InspectionList> {
                     return ToRun(
                       inspectionData: inspectionDataItem,
                       onTap: () {
-                        inspectionProvider.selectToRunInspection(context,
-                            inspectiondata: inspectionDataItem);
+                        inspectionDataItem.canRun == true
+                            ? inspectionProvider.selectToRunInspection(context,
+                                inspectiondata: inspectionDataItem)
+                            : null;
                       },
                     );
                   },
@@ -289,33 +291,190 @@ class _InspectionListState extends State<InspectionList> {
               if (inspectionProvider.loadingMore) const LoadinWidget(),
               if (!inspectionProvider.loading &&
                   selectedFilter == "2nd Inspection")
-                Text(
-                  "${inspectionProvider.inspectionResponse.data?.data?.length.toString() ?? "-"} of  ${inspectionProvider.inspectionResponse.data?.total.toString() ?? "-"}",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      color: NewColors.secondattextcolor,
-                      fontWeight: FontWeight.bold,
-                      fontSize: buildFontSize(30)),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      textAlign: TextAlign.center,
+                      "Showing Count ${(inspectionProvider.inspectionResponse.data?.from ?? 0)} - ${(inspectionProvider.inspectionResponse.data?.to ?? 0)} of  ${inspectionProvider.inspectionResponse.data?.total ?? 0}\n Page ${inspectionProvider.page} of ${inspectionProvider.inspectionResponse.data?.lastPage ?? 0}",
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: buildFontSize(25)),
+                    ),
+                    SizedBox(
+                      height: 10.r,
+                    ),
+                    Wrap(
+                      children: List.generate(
+                          inspectionProvider.inspectionResponse.data!.lastPage!,
+                          (index) {
+                        return Padding(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 8.r, vertical: 8.r),
+                          child: InkWell(
+                            onTap: () {
+                              _scrollController.jumpTo(
+                                _scrollController.position
+                                    .minScrollExtent, // Target offset 0.0
+                              );
+                              inspectionProvider.getMoreData(context,
+                                  newpage: index + 1);
+                            },
+                            child: Container(
+                                padding: EdgeInsets.symmetric(
+                                    vertical: 10.r, horizontal: 10.r),
+                                decoration: BoxDecoration(
+                                    color:
+                                        (index + 1) == inspectionProvider.page
+                                            ? NewColors.inspectionscolor
+                                            : NewColors.whitecolor,
+                                    borderRadius: BorderRadius.circular(10.r)),
+                                child: SizedBox(
+                                  width: 20.r,
+                                  child: Text(
+                                    textAlign: TextAlign.center,
+                                    (index + 1).toString(),
+                                    style: TextStyle(
+                                        color: (index + 1) ==
+                                                inspectionProvider.page
+                                            ? NewColors.whitecolor
+                                            : NewColors.black,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: buildFontSize(25)),
+                                  ),
+                                )),
+                          ),
+                        );
+                      }),
+                    ),
+                  ],
                 ),
               if (!inspectionProvider.loading &&
                   selectedFilter == "In Progress")
-                Text(
-                  "${inspectionProvider.inspectionResponse.data?.data?.length.toString() ?? "-"} of  ${inspectionProvider.inspectionResponse.data?.total.toString() ?? "-"}",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      color: NewColors.secondattextcolor,
-                      fontWeight: FontWeight.bold,
-                      fontSize: buildFontSize(30)),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      textAlign: TextAlign.center,
+                      "Showing Count ${(inspectionProvider.inspectionResponse.data?.from ?? 0)} - ${(inspectionProvider.inspectionResponse.data?.to ?? 0)} of  ${inspectionProvider.inspectionResponse.data?.total ?? 0}\n Page ${inspectionProvider.page} of ${inspectionProvider.inspectionResponse.data?.lastPage ?? 0}",
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: buildFontSize(25)),
+                    ),
+                    SizedBox(
+                      height: 10.r,
+                    ),
+                    Wrap(
+                      children: List.generate(
+                          inspectionProvider.inspectionResponse.data!.lastPage!,
+                          (index) {
+                        return Padding(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 8.r, vertical: 8.r),
+                          child: InkWell(
+                            onTap: () {
+                              _scrollController.jumpTo(
+                                _scrollController.position
+                                    .minScrollExtent, // Target offset 0.0
+                              );
+                              inspectionProvider.getMoreData(context,
+                                  newpage: index + 1);
+                            },
+                            child: Container(
+                                padding: EdgeInsets.symmetric(
+                                    vertical: 10.r, horizontal: 10.r),
+                                decoration: BoxDecoration(
+                                    color:
+                                        (index + 1) == inspectionProvider.page
+                                            ? NewColors.inspectionscolor
+                                            : NewColors.whitecolor,
+                                    borderRadius: BorderRadius.circular(10.r)),
+                                child: SizedBox(
+                                  width: 20.r,
+                                  child: Text(
+                                    textAlign: TextAlign.center,
+                                    (index + 1).toString(),
+                                    style: TextStyle(
+                                        color: (index + 1) ==
+                                                inspectionProvider.page
+                                            ? NewColors.whitecolor
+                                            : NewColors.black,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: buildFontSize(25)),
+                                  ),
+                                )),
+                          ),
+                        );
+                      }),
+                    ),
+                  ],
                 ),
-              if (!inspectionProvider.loading && selectedFilter == "To Run")
-                Text(
-                  "${inspectionProvider.inspectionToRunResponse.data?.data?.length.toString() ?? "-"} of  ${inspectionProvider.inspectionToRunResponse.data?.total.toString() ?? "-"}",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                      color: NewColors.secondattextcolor,
-                      fontWeight: FontWeight.bold,
-                      fontSize: buildFontSize(30)),
-                )
+              SizedBox(
+                height: 10.r,
+              ),
+              if (selectedFilter == "To Run" &&
+                  inspectionProvider.loading == false)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      textAlign: TextAlign.center,
+                      "Showing Count ${(inspectionProvider.inspectionToRunResponse.data?.from ?? 0)} - ${(inspectionProvider.inspectionToRunResponse.data?.to ?? 0)} of  ${inspectionProvider.inspectionToRunResponse.data?.total.toString() ?? "-"}\n Page ${inspectionProvider.page} of ${inspectionProvider.inspectionToRunResponse.data?.lastPage ?? 0}",
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: buildFontSize(25)),
+                    ),
+                    SizedBox(
+                      height: 10.r,
+                    ),
+                    Wrap(
+                      children: List.generate(
+                          inspectionProvider
+                                  .inspectionToRunResponse.data?.lastPage ??
+                              0, (index) {
+                        return Padding(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 8.r, vertical: 8.r),
+                          child: InkWell(
+                            onTap: () {
+                              if ((index + 1) != inspectionProvider.page) {
+                                _scrollController.jumpTo(
+                                  _scrollController.position
+                                      .minScrollExtent, // Target offset 0.0
+                                );
+                                inspectionProvider.getMoreData(context,
+                                    newpage: index + 1);
+                              }
+                            },
+                            child: Container(
+                                padding: EdgeInsets.symmetric(
+                                    vertical: 10.r, horizontal: 10.r),
+                                decoration: BoxDecoration(
+                                    color:
+                                        (index + 1) == inspectionProvider.page
+                                            ? NewColors.inspectionscolor
+                                            : NewColors.whitecolor,
+                                    borderRadius: BorderRadius.circular(10.r)),
+                                child: SizedBox(
+                                  width: 20.r,
+                                  child: Text(
+                                    textAlign: TextAlign.center,
+                                    (index + 1).toString(),
+                                    style: TextStyle(
+                                        color: (index + 1) ==
+                                                inspectionProvider.page
+                                            ? NewColors.whitecolor
+                                            : NewColors.black,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: buildFontSize(25)),
+                                  ),
+                                )),
+                          ),
+                        );
+                      }),
+                    ),
+                  ],
+                ),
             ],
           );
         },
@@ -690,7 +849,8 @@ class ToRun extends StatelessWidget {
                       fontSize: buildFontSize(30),
                     ),
                   ),
-                  if (checkPermission(permit: "run inspections"))
+                  if (checkPermission(permit: "run inspections") &&
+                      inspectionData.canRun == true)
                     InkWell(
                       onTap: onTap,
                       child: Container(

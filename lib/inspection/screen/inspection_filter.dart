@@ -41,37 +41,79 @@ class _InspectionFilterState extends State<InspectionFilter> {
             padding: EdgeInsets.all(20.r),
             child: Wrap(
               children: List.generate(
-                  facilitiesProvider.facilityList.data!.data!.length, (index) {
-                FacilityData facilityData =
-                    facilitiesProvider.facilityList.data!.data![index];
-                return Padding(
-                  padding: EdgeInsets.all(8.r),
-                  child: FilterChip(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 20.r, vertical: 10.r),
-                    shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(100),
-                        side: BorderSide(
-                            color: facilityData.id.toString() ==
-                                    inspectionProvider.customFac
-                                ? NewColors.primary
-                                : NewColors.secondaycolor,
-                            width: 2)),
-                    backgroundColor: NewColors.whitecolor,
-                    label: Text(
-                      facilityData.name ?? "--",
-                      style: TextStyle(
-                          fontFamily: "Inter",
-                          fontWeight: mediumFontWeight,
-                          color: NewColors.black,
-                          fontSize: buildFontSize(35)),
-                    ),
-                    onSelected: (value) {
-                      inspectionProvider.selectFilter(context,
-                          id: facilityData.id.toString());
-                    },
-                  ),
-                );
+                  facilitiesProvider.facilityList.data!.data!.length + 1,
+                  (index) {
+                FacilityData facilityData = FacilityData();
+                print(index ==
+                    facilitiesProvider.facilityList.data!.data!.length);
+                if (index ==
+                    facilitiesProvider.facilityList.data!.data!.length) {
+                } else {
+                  facilityData =
+                      facilitiesProvider.facilityList.data!.data![index];
+                }
+
+                return index ==
+                        facilitiesProvider.facilityList.data!.data!.length
+                    ? Padding(
+                        padding: EdgeInsets.all(8.r),
+                        child: FilterChip(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 20.r, vertical: 10.r),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(100),
+                              side: BorderSide(
+                                  color: inspectionProvider.customFac?.length ==
+                                          facilitiesProvider
+                                              .facilityList.data!.data!.length
+                                      ? NewColors.primary
+                                      : NewColors.secondaycolor,
+                                  width: 2)),
+                          backgroundColor: NewColors.whitecolor,
+                          label: Text(
+                            "All",
+                            style: TextStyle(
+                                fontFamily: "Inter",
+                                fontWeight: mediumFontWeight,
+                                color: NewColors.black,
+                                fontSize: buildFontSize(35)),
+                          ),
+                          onSelected: (value) {
+                            inspectionProvider.allFilter(context,
+                                facilitiList:
+                                    facilitiesProvider.facilityList.data!.data);
+                          },
+                        ),
+                      )
+                    : Padding(
+                        padding: EdgeInsets.all(8.r),
+                        child: FilterChip(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 20.r, vertical: 10.r),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(100),
+                              side: BorderSide(
+                                  color: inspectionProvider.customFac?.contains(
+                                              facilityData.id.toString()) ??
+                                          false
+                                      ? NewColors.primary
+                                      : NewColors.secondaycolor,
+                                  width: 2)),
+                          backgroundColor: NewColors.whitecolor,
+                          label: Text(
+                            facilityData.name ?? "--",
+                            style: TextStyle(
+                                fontFamily: "Inter",
+                                fontWeight: mediumFontWeight,
+                                color: NewColors.black,
+                                fontSize: buildFontSize(35)),
+                          ),
+                          onSelected: (value) {
+                            inspectionProvider.selectFilter(context,
+                                id: facilityData.id.toString());
+                          },
+                        ),
+                      );
               }),
             ),
           );

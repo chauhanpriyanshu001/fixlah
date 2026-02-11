@@ -7,8 +7,11 @@ import 'package:fixlah/config/sizes.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
 
-naviagteTo(context, {required Widget Function(BuildContext) builder}) {
-  Navigator.push(context, MaterialPageRoute(builder: builder));
+naviagteTo(context,
+    {required Widget Function(BuildContext) builder,
+    Function(dynamic)? onValue}) {
+  Navigator.push(context, MaterialPageRoute(builder: builder))
+      .then(onValue != null ? onValue : (val) {});
 }
 
 naviagteToandreplace(context,
@@ -174,6 +177,7 @@ Future openDialogue(context, {String? title, required Widget data}) {
                     borderRadius: BorderRadiusGeometry.circular(30)),
                 backgroundColor: NewColors.whitecolor,
                 title: Text(
+                  textAlign: TextAlign.center,
                   title,
                 ),
                 children: [data],
@@ -211,63 +215,70 @@ class ConfirmationWidget extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Expanded(
-                child: Text(
-                  title,
-                  style: TextStyle(
-                      color: NewColors.black,
-                      fontWeight: FontWeight.bold,
-                      fontSize: buildFontSize(40)),
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Text(
+                    textAlign: TextAlign.center,
+                    title,
+                    style: TextStyle(
+                        color: NewColors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: buildFontSize(30)),
+                  ),
                 ),
               ),
             ],
           ),
         ),
         Expanded(
-          child: Row(
-            children: [
-              Expanded(
-                  child: InkWell(
-                onTap: onTapNo,
-                child: Container(
-                  padding: EdgeInsets.all(15),
-                  decoration: BoxDecoration(
-                      border:
-                          Border.all(color: NewColors.secondaycolor, width: 3),
-                      borderRadius: BorderRadius.circular(100)),
-                  child: Text(
-                    "No",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: NewColors.black,
-                      fontWeight: FontWeight.bold,
-                      fontSize: buildFontSize(30),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: [
+                Expanded(
+                    child: InkWell(
+                  onTap: onTapNo,
+                  child: Container(
+                    padding: EdgeInsets.all(15),
+                    decoration: BoxDecoration(
+                        border: Border.all(
+                            color: NewColors.secondaycolor, width: 3),
+                        borderRadius: BorderRadius.circular(100)),
+                    child: Text(
+                      "No",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: NewColors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: buildFontSize(30),
+                      ),
                     ),
                   ),
+                )),
+                SizedBox(
+                  width: 10,
                 ),
-              )),
-              SizedBox(
-                width: 10,
-              ),
-              Expanded(
-                  child: InkWell(
-                onTap: onTapYes,
-                child: Container(
-                  padding: EdgeInsets.all(15),
-                  decoration: BoxDecoration(
-                      color: NewColors.primary,
-                      borderRadius: BorderRadius.circular(30)),
-                  child: Text(
-                    "Yes",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: NewColors.black,
-                      fontWeight: FontWeight.bold,
-                      fontSize: buildFontSize(30),
+                Expanded(
+                    child: InkWell(
+                  onTap: onTapYes,
+                  child: Container(
+                    padding: EdgeInsets.all(15),
+                    decoration: BoxDecoration(
+                        color: NewColors.primary,
+                        borderRadius: BorderRadius.circular(30)),
+                    child: Text(
+                      "Yes",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: NewColors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: buildFontSize(30),
+                      ),
                     ),
                   ),
-                ),
-              )),
-            ],
+                )),
+              ],
+            ),
           ),
         )
       ],

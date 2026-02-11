@@ -39,15 +39,15 @@ class _IssuesHomeScreenState extends State<IssuesHomeScreen> {
       context,
       listen: false,
     );
-    _scrollController.addListener(() async {
-      if (_scrollController.position.pixels ==
-          _scrollController.position.maxScrollExtent) {
-        if (issuesProvider.issuesList.data?.data?.length.toString() !=
-            issuesProvider.issuesList.data?.total!.toString()) {
-          issuesProvider.getMoreData(context);
-        }
-      }
-    });
+    // _scrollController.addListener(() async {
+    //   if (_scrollController.position.pixels ==
+    //       _scrollController.position.maxScrollExtent) {
+    //     if (issuesProvider.issuesList.data?.data?.length.toString() !=
+    //         issuesProvider.issuesList.data?.total!.toString()) {
+    //       issuesProvider.getMoreData(context);
+    //     }
+    //   }
+    // });
     issuesProvider.urgentIssueCount =
         homeProvider.dashboardData.data?.issues?.urgent ?? 0;
     issuesProvider.noturgentIssueCount =
@@ -69,7 +69,7 @@ class _IssuesHomeScreenState extends State<IssuesHomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: NewColors.secondaryBgColor,
+      backgroundColor: const Color.fromRGBO(245, 245, 245, 1),
       floatingActionButton: checkPermission(permit: "create issues")
           ? Container(
               padding: EdgeInsets.all(10.r),
@@ -193,24 +193,86 @@ class _IssuesHomeScreenState extends State<IssuesHomeScreen> {
                           IssueData issueData =
                               issuesProvider.issuesList.data!.data![index];
 
-                          return IssueCard(
-                            issueData: issueData,
-                            onTap: () {
-                              issuesProvider.selectIssue(context, issueData);
-                            },
+                          return Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(15),
+                              boxShadow: [
+                                BoxShadow(
+                                    color:
+                                        const Color.fromRGBO(12, 12, 12, 0.05),
+                                    spreadRadius: 2,
+                                    blurRadius: 4,
+                                    offset: Offset(0, 4))
+                              ],
+                            ),
+                            child: IssueCard(
+                              issueData: issueData,
+                              onTap: () {
+                                issuesProvider.selectIssue(context, issueData);
+                              },
+                            ),
                           );
                         },
                       ),
             if (issuesProvider.loadingMore) const LoadinWidget(),
             if (!issuesProvider.loading)
-              Text(
-                "${issuesProvider.issuesList.data?.data?.length.toString() ?? "-"} of  ${issuesProvider.issuesList.data?.total.toString() ?? "-"}",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    color: NewColors.secondattextcolor,
-                    fontWeight: FontWeight.bold,
-                    fontSize: buildFontSize(30)),
-              )
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    textAlign: TextAlign.center,
+                    "Showing Count ${(issuesProvider.issuesList.data?.from ?? 0)} - ${(issuesProvider.issuesList.data?.to ?? 0)} of  ${issuesProvider.issuesList.data?.total ?? 0}\n Page ${issuesProvider.currentPage} of ${issuesProvider.issuesList.data?.lastPage ?? 0}",
+                    style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: buildFontSize(25)),
+                  ),
+                  SizedBox(
+                    height: 10.r,
+                  ),
+                  Wrap(
+                    children: List.generate(
+                        issuesProvider.issuesList.data?.lastPage ?? 0, (index) {
+                      return Padding(
+                        padding: EdgeInsets.symmetric(
+                            horizontal: 8.r, vertical: 8.r),
+                        child: InkWell(
+                          onTap: () {
+                            _scrollController.jumpTo(
+                              _scrollController.position
+                                  .minScrollExtent, // Target offset 0.0
+                            );
+                            issuesProvider.getMoreData(context,
+                                newpage: index + 1);
+                          },
+                          child: Container(
+                              padding: EdgeInsets.symmetric(
+                                  vertical: 10.r, horizontal: 10.r),
+                              decoration: BoxDecoration(
+                                  color:
+                                      (index + 1) == issuesProvider.currentPage
+                                          ? NewColors.issuescolor
+                                          : NewColors.whitecolor,
+                                  borderRadius: BorderRadius.circular(10.r)),
+                              child: SizedBox(
+                                width: 20.r,
+                                child: Text(
+                                  textAlign: TextAlign.center,
+                                  (index + 1).toString(),
+                                  style: TextStyle(
+                                      color: (index + 1) ==
+                                              issuesProvider.currentPage
+                                          ? NewColors.whitecolor
+                                          : NewColors.black,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: buildFontSize(25)),
+                                ),
+                              )),
+                        ),
+                      );
+                    }),
+                  ),
+                ],
+              ),
           ],
         );
       }),
@@ -325,7 +387,7 @@ class IssueCard extends StatelessWidget {
         children: [
           Container(
             width: fullWidth,
-            height: fullHeight / 4,
+            height: fullHeight / 3,
             decoration: BoxDecoration(
               borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(15),
@@ -333,9 +395,10 @@ class IssueCard extends StatelessWidget {
               ),
               image: DecorationImage(
                 fit: BoxFit.cover,
+
                 // ignore: prefer_is_empty
                 image: NetworkImage(issueData.photos?.length == 0
-                    ? "https://fixlah.myila.in/assets/desktop/img/fixlah-logo.png"
+                    ? "https://staging.fixlah.com.sg/assets/desktop/img/fixlah-logo.png"
                     : "${AppConstants.issuesImageBaseUrl}${issueData.photos![0].photoPath}"),
               ),
             ),
@@ -363,8 +426,8 @@ class IssueCard extends StatelessWidget {
                     SizedBox(height: 8.r),
                     Badge(
                       backgroundColor: issueData.creamUnit == 0
-                          ? NewColors.red
-                          : NewColors.greencolor,
+                          ? const Color.fromARGB(215, 255, 55, 0)
+                          : const Color.fromARGB(225, 67, 192, 0),
                       padding: const EdgeInsets.symmetric(
                           vertical: 5, horizontal: 10),
                       label: Text(
@@ -401,95 +464,127 @@ class IssueCard extends StatelessWidget {
                       child: Text(
                         issueData.issueIdAuto.toString(),
                         style: TextStyle(
-                            fontSize: buildFontSize(28),
-                            color: NewColors.black,
-                            fontWeight: boldFontWeight),
+                            fontSize: buildFontSize(20),
+                            color: NewColors.secondattextcolor,
+                            fontWeight: mediumFontWeight),
                       ),
                     ),
+                  ],
+                ),
+                // Divider(
+                //   height: 20.r,
+                //   color: NewColors.secondaycolor,
+                // ),
+                SizedBox(
+                  height: 5.r,
+                ),
+                Row(
+                  // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "${issueData.facility?.name ?? ""}",
+                      style: TextStyle(
+                          fontSize: buildFontSize(28),
+                          color: NewColors.black,
+                          fontWeight: mediumFontWeight),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 5.r),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: NewColors.secondaryBgColor,
+                        ),
+                        height: 15.r,
+                        width: 2.r,
+                      ),
+                    ),
+                    Text(
+                      '${issueData.block?.name ?? ""} ${issueData.unit?.unitNo ?? ""}',
+                      style: TextStyle(
+                          fontSize: buildFontSize(28),
+                          color: NewColors.black,
+                          fontWeight: mediumFontWeight),
+                    ),
+                  ],
+                ),
+                SizedBox(
+                  height: 5.r,
+                ),
+                // Divider(
+                //   height: 20.r,
+                //   color: NewColors.secondaycolor,
+                // ),
+
+                Row(
+                  children: [
                     Expanded(
                       child: Text(
-                        textAlign: TextAlign.end,
+                        textAlign: TextAlign.start,
                         // ignore: prefer_is_empty
                         issueData.items?.length == 0
                             ? "-"
                             : issueData.items?[0].item ?? "-",
                         style: TextStyle(
-                            fontSize: buildFontSize(30),
-                            color: NewColors.red,
+                            fontSize: buildFontSize(32),
+                            color: NewColors.issuescolor,
                             fontWeight: boldFontWeight),
                       ),
                     ),
                   ],
                 ),
-                Divider(
-                  height: 20.r,
-                  color: NewColors.secondaycolor,
+                SizedBox(
+                  height: 10.r,
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      issueData.facility?.name ?? "",
-                      style: TextStyle(
-                          fontSize: buildFontSize(30),
-                          color: NewColors.black,
-                          fontWeight: mediumFontWeight),
-                    ),
-                    Text(
-                      '${issueData.block?.name ?? ""} ${issueData.unit?.unitNo ?? ""}',
-                      style: TextStyle(
-                          fontSize: buildFontSize(30),
-                          color: NewColors.black,
-                          fontWeight: mediumFontWeight),
-                    ),
-                  ],
-                ),
-                Divider(
-                  height: 20.r,
-                  color: NewColors.secondaycolor,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Expanded(
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text.rich(
-                              TextSpan(
-                                text: "Created by ",
-                                style: TextStyle(
-                                  fontSize: buildFontSize(25),
-                                  fontWeight: FontWeight.w500,
-                                  color: NewColors.secondattextcolor,
-                                ),
-                                children: [
-                                  TextSpan(
-                                    text: issueData.createdBy?.name ?? "",
-                                    style: TextStyle(
-                                      fontSize: buildFontSize(25),
-                                      fontWeight: FontWeight.bold,
-                                      color: NewColors.black,
-                                    ),
+                Container(
+                  padding: EdgeInsets.all(5.r),
+                  decoration: BoxDecoration(
+                      color: const Color.fromRGBO(217, 217, 217, 0.2),
+                      borderRadius: BorderRadius.circular(10.r)),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text.rich(
+                                TextSpan(
+                                  text: "Created by ",
+                                  style: TextStyle(
+                                    fontSize: buildFontSize(20),
+                                    fontWeight: FontWeight.w500,
+                                    color: NewColors.secondattextcolor,
                                   ),
-                                ],
+                                  children: [
+                                    TextSpan(
+                                      text: issueData.createdBy?.name ?? "",
+                                      style: TextStyle(
+                                        fontSize: buildFontSize(20),
+                                        fontWeight: FontWeight.bold,
+                                        color: NewColors.black,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Expanded(
-                      child: Text(
-                        textAlign: TextAlign.end,
-                        formateDateTime(value: issueData.createdAt ?? '') ?? "",
-                        style: TextStyle(
-                          fontSize: buildFontSize(25),
-                          color: NewColors.secondattextcolor,
+                          ],
                         ),
                       ),
-                    ),
-                  ],
+                      Expanded(
+                        child: Text(
+                          textAlign: TextAlign.end,
+                          formateDateTime(value: issueData.createdAt ?? '') ??
+                              "",
+                          style: TextStyle(
+                            fontSize: buildFontSize(20),
+                            color: NewColors.secondattextcolor,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 SizedBox(
                   height: 10.r,

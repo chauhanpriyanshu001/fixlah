@@ -96,7 +96,11 @@ class _FacilitiesScreenState extends State<FacilitiesScreen> {
                               image: DecorationImage(
                                   fit: BoxFit.cover,
                                   image: AssetImage(facilitiesProvider
-                                      .facilitiesImages[index]))),
+                                      .facilitiesImages
+                                      .firstWhere((element) =>
+                                          element['value'] ==
+                                          facilitiData.name
+                                              ?.toLowerCase())['image']))),
                         ),
                         Container(
                           height: fullHeight / 4,

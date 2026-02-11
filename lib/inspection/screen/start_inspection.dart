@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:fixlah/config/colors.dart';
 import 'package:fixlah/config/sizes.dart';
 import 'package:fixlah/config/text_fields.dart';
@@ -12,6 +14,7 @@ import 'package:fixlah/inspection/provider/inspection_provider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class StartInspection extends StatefulWidget {
@@ -120,7 +123,9 @@ class _StartInspectionState extends State<StartInspection> {
                           CustomTextFields(
                             label: "Block",
                             hintText: "Select Block",
-                            validator: Validators.validateRequired,
+                            validator: inspectionData.unitSpecific == "Unit"
+                                ? Validators.validateRequired
+                                : null,
                             readOnly: true,
                             onTap: () {
                               openDialogue(context,
@@ -167,47 +172,62 @@ class _StartInspectionState extends State<StartInspection> {
                             height: 10.r,
                           ),
                           // Unit  No name
-                          CustomTextFields(
-                            label: "Unit No",
-                            hintText: "Select Unit No",
-                            validator: Validators.validateRequired,
-                            readOnly: true,
-                            onTap: () {
-                              openDialogue(context,
-                                  title: "Select Unit",
-                                  data: SizedBox(
-                                    width: fullWidth - 200,
-                                    height: fullHeight / 2,
-                                    child: ListView.builder(
-                                      itemCount:
-                                          facilitiesProvider.unitList.length,
-                                      itemBuilder: (context, index) {
-                                        UnitData unitData =
-                                            facilitiesProvider.unitList[index];
-                                        return ListTile(
-                                          onTap: () {
-                                            unitNo.text = unitData.unitNo!;
-                                            data.addAll({
-                                              'facility_unit_id': unitData.id,
-                                            });
-                                            setState(() {});
-                                            Navigator.pop(context);
-                                          },
-                                          title: Text(unitData.unitNo ?? "-"),
-                                        );
-                                      },
-                                    ),
-                                  ));
-                            },
-                            controller: unitNo,
-                          ),
+                          if (inspectionData.unitSpecific == "Unit")
+                            CustomTextFields(
+                              label: "Unit No",
+                              hintText: "Select Unit No",
+                              validator: Validators.validateRequired,
+                              readOnly: true,
+                              onTap: () {
+                                openDialogue(context,
+                                    title: "Select Unit",
+                                    data: SizedBox(
+                                      width: fullWidth - 200,
+                                      height: fullHeight / 2,
+                                      child: ListView.builder(
+                                        itemCount:
+                                            facilitiesProvider.unitList.length,
+                                        itemBuilder: (context, index) {
+                                          UnitData unitData = facilitiesProvider
+                                              .unitList[index];
+                                          return ListTile(
+                                            onTap: () {
+                                              unitNo.text = unitData.unitNo!;
+                                              data.addAll({
+                                                'facility_unit_id': unitData.id,
+                                              });
+                                              setState(() {});
+                                              Navigator.pop(context);
+                                            },
+                                            title: Text(unitData.unitNo ?? "-"),
+                                          );
+                                        },
+                                      ),
+                                    ));
+                              },
+                              controller: unitNo,
+                            ),
                           const Expanded(child: SizedBox()),
                           NxtBtn(
                             text: "Next",
                             onTap: () {
                               if (_key.currentState!.validate()) {
-                                inspectionProvider.createInspection(context,
-                                    body: data);
+                                log(data.toString());
+                                inspectionProvider.checkDuplicate(context,
+                                    body: {
+                                      "inspection_template_id":
+                                          inspectionData.id,
+                                      "facility_id": inspectionData.facilityId,
+                                      "start_date": DateFormat("yyyy-MM-dd")
+                                          .format(DateTime.now()),
+                                      "facility_block_id":
+                                          data['facility_block_id'] ?? "",
+                                      "facility_unit_id":
+                                          data['facility_unit_id'] ?? ""
+                                    },
+                                    inspbody: data);
+                                // inspectionProvider.createInspection(context,
+                                //     body: data);
                               }
                             },
                           )
