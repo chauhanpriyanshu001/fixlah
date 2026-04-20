@@ -27,9 +27,11 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>This app requires camera access to take photos.</string>
+	<string>Fixlah needs camera access to capture photos for documenting issues, reporting inspection findings, and verifying completed work orders.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>This app requires microphone access for recording videos.</string>
+	<string>Fixlah needs microphone access to record audio when capturing videos for detailed issue reporting and inspection evidence.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Fixlah needs access to your photo library to allow you to upload images for issue reports, inspections, and work order documentation.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>
@@ -54,7 +56,7 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>NSLocationWhenInUseUsageDescription</key>
-<string>Your app needs your location to provide you with relevant services, such as nearby results or mapping features.</string>
+	<string>Fixlah needs your location to automatically tag photos and reports with the correct site and building information for accurate inspections.</string>
 
 	<key>io.flutter.embedded_views_preview</key>
 	<true/>

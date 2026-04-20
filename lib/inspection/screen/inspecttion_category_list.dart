@@ -102,6 +102,7 @@ class _InspecttionCategoryListState extends State<InspecttionCategoryList> {
                                 padding: EdgeInsets.all(15.r),
                                 decoration: BoxDecoration(
                                     color:
+
                                         // data.condition == null &&
                                         //         data.overallGrade == null &&
                                         //         data.overallCompliance == null
@@ -304,16 +305,18 @@ class _InspecttionCategoryListState extends State<InspecttionCategoryList> {
         bottomSheet: inspectionCategoryitemData.data != null &&
                 inspectionCategoryitemData.data?.length == 0
             ? SizedBox()
-            : Container(
-                color: NewColors.whitecolor,
-                padding: EdgeInsets.all(25.r),
-                child: NxtBtn(
-                  onTap: () {
-                    inspectionProvider.checkAndNaviagte(context);
-                  },
-                  text: "Generate Report",
-                ),
-              ),
+            : permissions.contains("generate inspections report")
+                ? Container(
+                    color: NewColors.whitecolor,
+                    padding: EdgeInsets.all(25.r),
+                    child: NxtBtn(
+                      onTap: () {
+                        inspectionProvider.checkAndNaviagte(context);
+                      },
+                      text: "Generate Report",
+                    ),
+                  )
+                : SizedBox(),
       );
     });
   }

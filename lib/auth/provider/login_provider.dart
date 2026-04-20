@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:fixlah/auth/model/face_login_data_model.dart';
 import 'package:fixlah/auth/model/login_response_model.dart';
+import 'package:fixlah/auth/provider/splash_provider.dart';
 
 import 'package:fixlah/auth/screen/login.dart';
 import 'package:fixlah/config/colors.dart';
@@ -57,6 +58,7 @@ class LoginState extends ChangeNotifier {
           await SharedPreferences.getInstance();
       accessToken = loginResponse.token!;
       permissions = loginResponse.user!.permissions!;
+
       OneSignal.login("${body!['username']}");
 
       if (rememberMe == true) {
@@ -69,7 +71,8 @@ class LoginState extends ChangeNotifier {
             .setStringList(SharedPreferencesKey.userPermissions, []);
         sharedPreferences.setString(SharedPreferencesKey.accessToken, "");
       }
-      naviagteToandreplace(context, builder: (context) => const HomeScreen());
+      SplashProvider splashProvider = SplashProvider();
+      await splashProvider.checkAuth(context, accessTokenNew: accessToken);
     }
     loading = false;
     notifyListeners();

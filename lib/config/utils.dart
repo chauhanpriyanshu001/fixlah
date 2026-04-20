@@ -52,11 +52,13 @@ PreferredSizeWidget generalAppBar(context,
 // next btn
 class NxtBtn extends StatelessWidget {
   final void Function()? onTap;
+  final bool? inverse;
   final String text;
   const NxtBtn({
     super.key,
     this.onTap,
     required this.text,
+    this.inverse,
   });
 
   @override
@@ -66,8 +68,11 @@ class NxtBtn extends StatelessWidget {
       child: Container(
           height: 50.r,
           decoration: BoxDecoration(
+            border: inverse == true
+                ? Border.all(color: NewColors.primary, width: 2)
+                : Border(),
             borderRadius: BorderRadius.circular(100),
-            color: NewColors.primary,
+            color: inverse == true ? Colors.transparent : NewColors.primary,
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,

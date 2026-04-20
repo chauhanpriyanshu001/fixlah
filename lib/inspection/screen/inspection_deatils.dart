@@ -2,7 +2,6 @@ import 'package:fixlah/config/colors.dart';
 import 'package:fixlah/config/sizes.dart';
 import 'package:fixlah/config/text_fields.dart';
 import 'package:fixlah/config/utils.dart';
-import 'package:fixlah/inspection/screen/inspection_details2.dart';
 import 'package:fixlah/inspection/screen/inspecttion_category_list.dart';
 import 'package:flutter/material.dart';
 

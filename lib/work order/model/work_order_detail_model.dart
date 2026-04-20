@@ -35,13 +35,13 @@ class Data {
   String? expectedEndTime;
   dynamic actualEndDate;
   dynamic actualEndTime;
-  String? locationTag;
+  LocationTag? locationTag;
   int? creamUnit;
   int? contracted;
   int? priority;
   int? unitSpecific;
   String? status;
-  int? clientId;
+  dynamic clientId;
   dynamic completionRemarks;
   dynamic completedBy;
   dynamic completedMode;
@@ -51,10 +51,10 @@ class Data {
   String? updatedAt;
   List<Items>? items;
   List<WorkorderPhotos>? workorderPhotos;
-  List<WorkorderPhotos>? completionPhotos;
+  List<dynamic>? completionPhotos;
   Facility? facility;
   CreatedBy? assignee;
-  Client? client;
+  dynamic client;
   Issue? issue;
   IssueItem? issueItem;
 
@@ -113,7 +113,9 @@ class Data {
     expectedEndTime = json['expected_end_time'];
     actualEndDate = json['actual_end_date'];
     actualEndTime = json['actual_end_time'];
-    locationTag = json['location_tag'];
+    locationTag = json['location_tag'] != null
+        ? new LocationTag.fromJson(json['location_tag'])
+        : null;
     creamUnit = json['cream_unit'];
     contracted = json['contracted'];
     priority = json['priority'];
@@ -144,9 +146,9 @@ class Data {
       });
     }
     if (json['completion_photos'] != null) {
-      completionPhotos = <WorkorderPhotos>[];
+      completionPhotos = [];
       json['completion_photos'].forEach((v) {
-        completionPhotos!.add(new WorkorderPhotos.fromJson(v));
+        completionPhotos!.add((v));
       });
     }
     facility = json['facility'] != null
@@ -155,8 +157,7 @@ class Data {
     assignee = json['assignee'] != null
         ? new CreatedBy.fromJson(json['assignee'])
         : null;
-    client =
-        json['client'] != null ? new Client.fromJson(json['client']) : null;
+    client = json['client'];
     issue = json['issue'] != null ? new Issue.fromJson(json['issue']) : null;
     issueItem = json['issue_item'] != null
         ? new IssueItem.fromJson(json['issue_item'])
@@ -180,7 +181,9 @@ class Data {
     data['expected_end_time'] = this.expectedEndTime;
     data['actual_end_date'] = this.actualEndDate;
     data['actual_end_time'] = this.actualEndTime;
-    data['location_tag'] = this.locationTag;
+    if (this.locationTag != null) {
+      data['location_tag'] = this.locationTag!.toJson();
+    }
     data['cream_unit'] = this.creamUnit;
     data['contracted'] = this.contracted;
     data['priority'] = this.priority;
@@ -215,15 +218,74 @@ class Data {
     if (this.assignee != null) {
       data['assignee'] = this.assignee!.toJson();
     }
-    if (this.client != null) {
-      data['client'] = this.client!.toJson();
-    }
+    data['client'] = this.client;
     if (this.issue != null) {
       data['issue'] = this.issue!.toJson();
     }
     if (this.issueItem != null) {
       data['issue_item'] = this.issueItem!.toJson();
     }
+    return data;
+  }
+}
+
+class LocationTag {
+  int? id;
+  String? referenceUuid;
+  String? name;
+  int? facilityId;
+  int? facilityBlockId;
+  int? facilityFloorId;
+  int? facilityUnitId;
+  String? qrcode;
+  int? createdBy;
+  int? updatedBy;
+  String? createdAt;
+  String? updatedAt;
+
+  LocationTag(
+      {this.id,
+      this.referenceUuid,
+      this.name,
+      this.facilityId,
+      this.facilityBlockId,
+      this.facilityFloorId,
+      this.facilityUnitId,
+      this.qrcode,
+      this.createdBy,
+      this.updatedBy,
+      this.createdAt,
+      this.updatedAt});
+
+  LocationTag.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
+    referenceUuid = json['reference_uuid'];
+    name = json['name'];
+    facilityId = json['facility_id'];
+    facilityBlockId = json['facility_block_id'];
+    facilityFloorId = json['facility_floor_id'];
+    facilityUnitId = json['facility_unit_id'];
+    qrcode = json['qrcode'];
+    createdBy = json['created_by'];
+    updatedBy = json['updated_by'];
+    createdAt = json['created_at'];
+    updatedAt = json['updated_at'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['id'] = this.id;
+    data['reference_uuid'] = this.referenceUuid;
+    data['name'] = this.name;
+    data['facility_id'] = this.facilityId;
+    data['facility_block_id'] = this.facilityBlockId;
+    data['facility_floor_id'] = this.facilityFloorId;
+    data['facility_unit_id'] = this.facilityUnitId;
+    data['qrcode'] = this.qrcode;
+    data['created_by'] = this.createdBy;
+    data['updated_by'] = this.updatedBy;
+    data['created_at'] = this.createdAt;
+    data['updated_at'] = this.updatedAt;
     return data;
   }
 }
@@ -423,10 +485,11 @@ class Facility {
   int? id;
   String? referenceUuid;
   String? name;
+  int? sortOrder;
   String? type;
   String? onefmFacilityInternalId;
-  dynamic createdBy;
-  dynamic updatedBy;
+  int? createdBy;
+  int? updatedBy;
   String? createdAt;
   String? updatedAt;
 
@@ -434,6 +497,7 @@ class Facility {
       {this.id,
       this.referenceUuid,
       this.name,
+      this.sortOrder,
       this.type,
       this.onefmFacilityInternalId,
       this.createdBy,
@@ -445,6 +509,7 @@ class Facility {
     id = json['id'];
     referenceUuid = json['reference_uuid'];
     name = json['name'];
+    sortOrder = json['sort_order'];
     type = json['type'];
     onefmFacilityInternalId = json['onefm_facility_internal_id'];
     createdBy = json['created_by'];
@@ -458,133 +523,9 @@ class Facility {
     data['id'] = this.id;
     data['reference_uuid'] = this.referenceUuid;
     data['name'] = this.name;
+    data['sort_order'] = this.sortOrder;
     data['type'] = this.type;
     data['onefm_facility_internal_id'] = this.onefmFacilityInternalId;
-    data['created_by'] = this.createdBy;
-    data['updated_by'] = this.updatedBy;
-    data['created_at'] = this.createdAt;
-    data['updated_at'] = this.updatedAt;
-    return data;
-  }
-}
-
-class Client {
-  int? id;
-  String? referenceUuid;
-  String? name;
-  String? onefmClientInternalId;
-  String? companyName;
-  String? email;
-  String? netsuiteClientId;
-  String? phone;
-  String? mobile;
-  String? address;
-  String? mailingAddress;
-  String? operationPersonName;
-  String? operationPhone;
-  String? operationMobile;
-  String? operationEmail;
-  String? accountPersonName;
-  String? accountPhone;
-  String? accountMobile;
-  String? accountEmail;
-  String? directorPersonName;
-  String? directorPhone;
-  String? directorMobile;
-  String? directorEmail;
-  int? status;
-  int? createdBy;
-  int? updatedBy;
-  dynamic createdAt;
-  dynamic updatedAt;
-
-  Client(
-      {this.id,
-      this.referenceUuid,
-      this.name,
-      this.onefmClientInternalId,
-      this.companyName,
-      this.email,
-      this.netsuiteClientId,
-      this.phone,
-      this.mobile,
-      this.address,
-      this.mailingAddress,
-      this.operationPersonName,
-      this.operationPhone,
-      this.operationMobile,
-      this.operationEmail,
-      this.accountPersonName,
-      this.accountPhone,
-      this.accountMobile,
-      this.accountEmail,
-      this.directorPersonName,
-      this.directorPhone,
-      this.directorMobile,
-      this.directorEmail,
-      this.status,
-      this.createdBy,
-      this.updatedBy,
-      this.createdAt,
-      this.updatedAt});
-
-  Client.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    referenceUuid = json['reference_uuid'];
-    name = json['name'];
-    onefmClientInternalId = json['onefm_client_internal_id'];
-    companyName = json['company_name'];
-    email = json['email'];
-    netsuiteClientId = json['netsuite_client_id'];
-    phone = json['phone'];
-    mobile = json['mobile'];
-    address = json['address'];
-    mailingAddress = json['mailing_address'];
-    operationPersonName = json['operation_person_name'];
-    operationPhone = json['operation_phone'];
-    operationMobile = json['operation_mobile'];
-    operationEmail = json['operation_email'];
-    accountPersonName = json['account_person_name'];
-    accountPhone = json['account_phone'];
-    accountMobile = json['account_mobile'];
-    accountEmail = json['account_email'];
-    directorPersonName = json['director_person_name'];
-    directorPhone = json['director_phone'];
-    directorMobile = json['director_mobile'];
-    directorEmail = json['director_email'];
-    status = json['status'];
-    createdBy = json['created_by'];
-    updatedBy = json['updated_by'];
-    createdAt = json['created_at'];
-    updatedAt = json['updated_at'];
-  }
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['id'] = this.id;
-    data['reference_uuid'] = this.referenceUuid;
-    data['name'] = this.name;
-    data['onefm_client_internal_id'] = this.onefmClientInternalId;
-    data['company_name'] = this.companyName;
-    data['email'] = this.email;
-    data['netsuite_client_id'] = this.netsuiteClientId;
-    data['phone'] = this.phone;
-    data['mobile'] = this.mobile;
-    data['address'] = this.address;
-    data['mailing_address'] = this.mailingAddress;
-    data['operation_person_name'] = this.operationPersonName;
-    data['operation_phone'] = this.operationPhone;
-    data['operation_mobile'] = this.operationMobile;
-    data['operation_email'] = this.operationEmail;
-    data['account_person_name'] = this.accountPersonName;
-    data['account_phone'] = this.accountPhone;
-    data['account_mobile'] = this.accountMobile;
-    data['account_email'] = this.accountEmail;
-    data['director_person_name'] = this.directorPersonName;
-    data['director_phone'] = this.directorPhone;
-    data['director_mobile'] = this.directorMobile;
-    data['director_email'] = this.directorEmail;
-    data['status'] = this.status;
     data['created_by'] = this.createdBy;
     data['updated_by'] = this.updatedBy;
     data['created_at'] = this.createdAt;
@@ -603,7 +544,7 @@ class Issue {
   dynamic fixlahIssueId;
   String? issueType;
   int? locationTagId;
-  int? clientId;
+  dynamic clientId;
   String? priority;
   int? creamUnit;
   int? unitSpecific;
@@ -611,6 +552,8 @@ class Issue {
   String? status;
   int? clientAcknowledgeRequire;
   int? clientAcknowledgeSent;
+  int? clientNonAcknowledgeSent;
+  dynamic clientNonAcknowledgeSentDate;
   dynamic clientAcknowledgeSentDate;
   int? proceedWo;
   int? clientAcknowledged;
@@ -626,10 +569,12 @@ class Issue {
   String? createdAt;
   String? updatedAt;
   bool? externalSent;
-  String? externalResponse;
+  dynamic externalResponse;
   int? externalAttempts;
   dynamic externalLastError;
-  String? externalSentAt;
+  dynamic externalSentAt;
+  Block? block;
+  Unit? unit;
 
   Issue(
       {this.id,
@@ -649,6 +594,8 @@ class Issue {
       this.status,
       this.clientAcknowledgeRequire,
       this.clientAcknowledgeSent,
+      this.clientNonAcknowledgeSent,
+      this.clientNonAcknowledgeSentDate,
       this.clientAcknowledgeSentDate,
       this.proceedWo,
       this.clientAcknowledged,
@@ -667,7 +614,9 @@ class Issue {
       this.externalResponse,
       this.externalAttempts,
       this.externalLastError,
-      this.externalSentAt});
+      this.externalSentAt,
+      this.block,
+      this.unit});
 
   Issue.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -687,6 +636,8 @@ class Issue {
     status = json['status'];
     clientAcknowledgeRequire = json['client_acknowledge_require'];
     clientAcknowledgeSent = json['client_acknowledge_sent'];
+    clientNonAcknowledgeSent = json['client_non_acknowledge_sent'];
+    clientNonAcknowledgeSentDate = json['client_non_acknowledge_sent_date'];
     clientAcknowledgeSentDate = json['client_acknowledge_sent_date'];
     proceedWo = json['proceed_wo'];
     clientAcknowledged = json['client_acknowledged'];
@@ -706,6 +657,8 @@ class Issue {
     externalAttempts = json['external_attempts'];
     externalLastError = json['external_last_error'];
     externalSentAt = json['external_sent_at'];
+    block = json['block'] != null ? new Block.fromJson(json['block']) : null;
+    unit = json['unit'] != null ? new Unit.fromJson(json['unit']) : null;
   }
 
   Map<String, dynamic> toJson() {
@@ -727,6 +680,9 @@ class Issue {
     data['status'] = this.status;
     data['client_acknowledge_require'] = this.clientAcknowledgeRequire;
     data['client_acknowledge_sent'] = this.clientAcknowledgeSent;
+    data['client_non_acknowledge_sent'] = this.clientNonAcknowledgeSent;
+    data['client_non_acknowledge_sent_date'] =
+        this.clientNonAcknowledgeSentDate;
     data['client_acknowledge_sent_date'] = this.clientAcknowledgeSentDate;
     data['proceed_wo'] = this.proceedWo;
     data['client_acknowledged'] = this.clientAcknowledged;
@@ -746,6 +702,134 @@ class Issue {
     data['external_attempts'] = this.externalAttempts;
     data['external_last_error'] = this.externalLastError;
     data['external_sent_at'] = this.externalSentAt;
+    if (this.block != null) {
+      data['block'] = this.block!.toJson();
+    }
+    if (this.unit != null) {
+      data['unit'] = this.unit!.toJson();
+    }
+    return data;
+  }
+}
+
+class Block {
+  int? id;
+  String? referenceUuid;
+  int? facilityId;
+  String? name;
+  String? onefmBlockInternalId;
+  int? createdBy;
+  int? updatedBy;
+  String? createdAt;
+  String? updatedAt;
+
+  Block(
+      {this.id,
+      this.referenceUuid,
+      this.facilityId,
+      this.name,
+      this.onefmBlockInternalId,
+      this.createdBy,
+      this.updatedBy,
+      this.createdAt,
+      this.updatedAt});
+
+  Block.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
+    referenceUuid = json['reference_uuid'];
+    facilityId = json['facility_id'];
+    name = json['name'];
+    onefmBlockInternalId = json['onefm_block_internal_id'];
+    createdBy = json['created_by'];
+    updatedBy = json['updated_by'];
+    createdAt = json['created_at'];
+    updatedAt = json['updated_at'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['id'] = this.id;
+    data['reference_uuid'] = this.referenceUuid;
+    data['facility_id'] = this.facilityId;
+    data['name'] = this.name;
+    data['onefm_block_internal_id'] = this.onefmBlockInternalId;
+    data['created_by'] = this.createdBy;
+    data['updated_by'] = this.updatedBy;
+    data['created_at'] = this.createdAt;
+    data['updated_at'] = this.updatedAt;
+    return data;
+  }
+}
+
+class Unit {
+  int? id;
+  String? referenceUuid;
+  int? facilityId;
+  int? facilityBlockId;
+  int? facilityFloorId;
+  String? unitNo;
+  String? onefmUnitInternalId;
+  String? creamUnit;
+  dynamic contractUnit;
+  dynamic occupied;
+  String? qrcode;
+  int? createdBy;
+  int? updatedBy;
+  dynamic createdAt;
+  dynamic updatedAt;
+
+  Unit(
+      {this.id,
+      this.referenceUuid,
+      this.facilityId,
+      this.facilityBlockId,
+      this.facilityFloorId,
+      this.unitNo,
+      this.onefmUnitInternalId,
+      this.creamUnit,
+      this.contractUnit,
+      this.occupied,
+      this.qrcode,
+      this.createdBy,
+      this.updatedBy,
+      this.createdAt,
+      this.updatedAt});
+
+  Unit.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
+    referenceUuid = json['reference_uuid'];
+    facilityId = json['facility_id'];
+    facilityBlockId = json['facility_block_id'];
+    facilityFloorId = json['facility_floor_id'];
+    unitNo = json['unit_no'];
+    onefmUnitInternalId = json['onefm_unit_internal_id'];
+    creamUnit = json['cream_unit'];
+    contractUnit = json['contract_unit'];
+    occupied = json['occupied'];
+    qrcode = json['qrcode'];
+    createdBy = json['created_by'];
+    updatedBy = json['updated_by'];
+    createdAt = json['created_at'];
+    updatedAt = json['updated_at'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['id'] = this.id;
+    data['reference_uuid'] = this.referenceUuid;
+    data['facility_id'] = this.facilityId;
+    data['facility_block_id'] = this.facilityBlockId;
+    data['facility_floor_id'] = this.facilityFloorId;
+    data['unit_no'] = this.unitNo;
+    data['onefm_unit_internal_id'] = this.onefmUnitInternalId;
+    data['cream_unit'] = this.creamUnit;
+    data['contract_unit'] = this.contractUnit;
+    data['occupied'] = this.occupied;
+    data['qrcode'] = this.qrcode;
+    data['created_by'] = this.createdBy;
+    data['updated_by'] = this.updatedBy;
+    data['created_at'] = this.createdAt;
+    data['updated_at'] = this.updatedAt;
     return data;
   }
 }

@@ -65,17 +65,23 @@ class _MarkImageScreenState extends State<MarkImageScreen> {
                 IconButton(
                     onPressed: () async {
                       if (imagePainterController.paintHistory.isNotEmpty) {
-                        if (widget.addImage == true) {
-                          await context.read<IssuesProvider>().addItemImage(
-                              context,
-                              byteList: await _exportMarkedImage(),
-                              index: widget.index!);
-                        } else {
-                          await context.read<IssuesProvider>().saveImage(
-                              context,
-                              byteList: await _exportMarkedImage(),
-                              goback: widget.goback);
-                        }
+                        File file = await context
+                            .read<IssuesProvider>()
+                            .uint8ListToFile(await _exportMarkedImage(),
+                                "issue${DateTime.now()}.jpg");
+                        Navigator.pop(context, file);
+                        // if (widget.addImage == true) {
+                        //   File file = await context
+                        //       .read<IssuesProvider>()
+                        //       .uint8ListToFile(await _exportMarkedImage(),
+                        //           "issue${DateTime.now()}");
+                        //   Navigator.pop(context, file);
+                        // } else {
+                        //   await context.read<IssuesProvider>().saveImage(
+                        //       context,
+                        //       byteList: await _exportMarkedImage(),
+                        //       goback: widget.goback);
+                        // }
                       } else {
                         Fluttertoast.showToast(
                             textColor: NewColors.black,

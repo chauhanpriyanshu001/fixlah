@@ -204,19 +204,24 @@ class IssueData {
     issueRaisedBy = json['issue_raised_by'];
     tenantName = json['tenant_name'];
     tenantFinNo = json['tenant_fin_no'];
-    createdBy = json['created_by'] != null
+    createdBy = (json['created_by'] != null && json['created_by'] is Map)
         ? CreatedBy.fromJson(json['created_by'])
         : null;
-    updatedBy = json['updated_by'] != null
+    updatedBy = (json['updated_by'] != null && json['updated_by'] is Map)
         ? CreatedBy.fromJson(json['updated_by'])
         : null;
     createdAt = json['created_at'];
     updatedAt = json['updated_at'];
     workOrdersCount = json['work_orders_count'];
-    facility =
-        json['facility'] != null ? Facility.fromJson(json['facility']) : null;
-    block = json['block'] != null ? Block.fromJson(json['block']) : null;
-    unit = json['unit'] != null ? Unit.fromJson(json['unit']) : null;
+    facility = (json['facility'] != null && json['facility'] is Map)
+        ? Facility.fromJson(json['facility'])
+        : null;
+    block = (json['block'] != null && json['block'] is Map)
+        ? Block.fromJson(json['block'])
+        : null;
+    unit = (json['unit'] != null && json['unit'] is Map)
+        ? Unit.fromJson(json['unit'])
+        : null;
     if (json['items'] != null) {
       items = <IssueItem>[];
       json['items'].forEach((v) {
@@ -229,8 +234,10 @@ class IssueData {
         photos!.add(Photos.fromJson(v));
       });
     }
-    client = json['client'] != null ? Client.fromJson(json['client']) : null;
-    locationTag = json['location_tag'] != null
+    client = (json['client'] != null && json['client'] is Map)
+        ? Client.fromJson(json['client'])
+        : null;
+    locationTag = (json['location_tag'] != null && json['location_tag'] is Map)
         ? LocationTag.fromJson(json['location_tag'])
         : null;
   }

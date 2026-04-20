@@ -146,75 +146,80 @@ class _WorkOrderListState extends State<WorkOrderList> {
                     Row(
                       children: [
                         // MY WO
-                        Expanded(
-                          child: InkWell(
-                            onTap: () {
-                              workOrderProvider.selectWoType(context,
-                                  woTypeInput: "My");
-                            },
-                            child: Container(
-                              height: 75.r,
-                              decoration: BoxDecoration(
-                                color: Colors.transparent,
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  width: 2,
-                                  color: selectedOrder == "My"
-                                      ? NewColors.workordercolor
-                                      : NewColors.secondaycolor,
+                        if (permissions.contains("my work order"))
+                          Expanded(
+                            child: InkWell(
+                              onTap: () {
+                                workOrderProvider.selectWoType(context,
+                                    woTypeInput: "My");
+                              },
+                              child: Container(
+                                height: 75.r,
+                                decoration: BoxDecoration(
+                                  color: Colors.transparent,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    width: 2,
+                                    color: selectedOrder == "My"
+                                        ? NewColors.workordercolor
+                                        : NewColors.secondaycolor,
+                                  ),
                                 ),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  "My Work Order",
-                                  style: TextStyle(
-                                      fontWeight: boldFontWeight,
-                                      color: selectedOrder == "My"
-                                          ? NewColors.workordercolor
-                                          : NewColors.black,
-                                      fontSize: buildFontSize(30)),
+                                child: Center(
+                                  child: Text(
+                                    "My Work Order",
+                                    style: TextStyle(
+                                        fontWeight: boldFontWeight,
+                                        color: selectedOrder == "My"
+                                            ? NewColors.workordercolor
+                                            : NewColors.black,
+                                        fontSize: buildFontSize(30)),
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                        SizedBox(
-                          width: 20.r,
-                        ),
-                        // All WO
+                        if (permissions.contains("all work order") &&
+                            permissions.contains("my work order"))
+                          SizedBox(
+                            width: 20.r,
+                          ),
+                        if (permissions.contains("all work order"))
 
-                        Expanded(
-                          child: InkWell(
-                            onTap: () {
-                              workOrderProvider.selectWoType(context,
-                                  woTypeInput: "All");
-                            },
-                            child: Container(
-                              height: 75.r,
-                              decoration: BoxDecoration(
-                                color: Colors.transparent,
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  width: 2,
-                                  color: selectedOrder == "All"
-                                      ? NewColors.workordercolor
-                                      : NewColors.secondaycolor,
+                          // All WO
+
+                          Expanded(
+                            child: InkWell(
+                              onTap: () {
+                                workOrderProvider.selectWoType(context,
+                                    woTypeInput: "All");
+                              },
+                              child: Container(
+                                height: 75.r,
+                                decoration: BoxDecoration(
+                                  color: Colors.transparent,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    width: 2,
+                                    color: selectedOrder == "All"
+                                        ? NewColors.workordercolor
+                                        : NewColors.secondaycolor,
+                                  ),
                                 ),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  "All Work Order",
-                                  style: TextStyle(
-                                      color: selectedOrder == "All"
-                                          ? NewColors.workordercolor
-                                          : NewColors.black,
-                                      fontWeight: boldFontWeight,
-                                      fontSize: buildFontSize(30)),
+                                child: Center(
+                                  child: Text(
+                                    "All Work Order",
+                                    style: TextStyle(
+                                        color: selectedOrder == "All"
+                                            ? NewColors.workordercolor
+                                            : NewColors.black,
+                                        fontWeight: boldFontWeight,
+                                        fontSize: buildFontSize(30)),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        )
+                          )
                       ],
                     ),
                     SizedBox(
@@ -489,7 +494,8 @@ class WorkOrderCard extends StatelessWidget {
                                 ),
                                 children: [
                                   TextSpan(
-                                    text: workOrderData.createdBy?.name ?? "",
+                                    text:
+                                        workOrderData.createdBy?.username ?? "",
                                     style: TextStyle(
                                       fontSize: buildFontSize(25),
                                       fontWeight: FontWeight.bold,
@@ -533,7 +539,7 @@ class WorkOrderCard extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            workOrderData.assignedTo ?? "",
+                            workOrderData.assignee?.username ?? "",
                             style: TextStyle(
                               fontSize: buildFontSize(25),
                               fontWeight: FontWeight.bold,

@@ -75,6 +75,11 @@ class IssuesProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  setItemCount(int newCount) {
+    itemCount = newCount;
+    notifyListeners();
+  }
+
   // set issue type
   setIssueType(context, {required String type}) {
     issueType = type;
@@ -131,7 +136,7 @@ class IssuesProvider extends ChangeNotifier {
                   addImage: addImage,
                   capturedImageFile: File(capturedimage.path),
                 ))).then((value) {
-      Navigator.pop(context, true);
+      Navigator.pop(context, value);
     });
   }
 
@@ -189,9 +194,9 @@ class IssuesProvider extends ChangeNotifier {
 
         statusCount = issuesList.data!.total ?? 0;
         print(issuesList.data!.data!.length);
+        log(jsonEncode(issuesList.data!.data));
         if (filter != "ALL") {
           // Check for filter
-          log(issuesList.data!.data.toString());
           List<IssueData> newDataList = [];
           for (var i = 0; i < issuesList.data!.data!.length; i++) {
             if (filter == "CREAM") {
@@ -330,6 +335,12 @@ class IssuesProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Add data in create issue
+  removeIssueDataController(String key) {
+    createIssue.remove(key);
+    notifyListeners();
+  }
+
 // Delete Image
   deleteImage({required int index}) {
     finalImges.removeAt(index);
@@ -428,6 +439,8 @@ class IssuesProvider extends ChangeNotifier {
     log(jsonEncode(createIssue));
     ApiResponse apiResponse = await ApiCall.postApi(context,
         endpoint: ApiEndpoints.issues,
+        createIssue: true,
+        createIssueCount: itemCount,
         body: createIssue,
         file: finalImges,
         fileParameter: "items[0][photos][]");
@@ -523,6 +536,10 @@ class IssuesProvider extends ChangeNotifier {
               fontSize: 15.r,
               msg: apiResponse.response['message']);
           getData(context);
+          await Provider.of<HomeProvider>(
+            context,
+            listen: false,
+          ).getData(context);
           if (status == "Urgent") {
             urgentIssueCount -= 1;
           } else {
@@ -668,39 +685,44 @@ class IssuesProvider extends ChangeNotifier {
 
   // edit issue
   Future editIssue(context,
-      {required String issueId, required Map<String, dynamic>? body}) async {
+      {required String issueId,
+      required Map<String, dynamic>? body,
+      int? itemCount}) async {
     try {
       loading = true;
       notifyListeners();
       log("edit data");
       log(body.toString());
       ApiResponse apiResponse = await ApiCall.postApi(context,
-          endpoint: "${ApiEndpoints.issues}/$issueId", body: body);
+          endpoint: "${ApiEndpoints.issues}/$issueId",
+          createIssue: true,
+          createIssueCount: itemCount ?? 0,
+          body: body);
       if (apiResponse.statusCode == 200) {
         log(apiResponse.response.toString());
-        int tempIndex = selctedIssueId!.items!
-            .indexWhere((data) => data.issueId.toString() == issueId);
-        if (tempIndex != -1) {
-          selctedIssueId!.items![tempIndex].item =
-              body?["items${[tempIndex]}[item]"].toString();
-          selctedIssueId!.items![tempIndex].issueType =
-              body?["items${[tempIndex]}[issue_type][]"].toString();
-          selctedIssueId!.items![tempIndex].areaId =
-              int.parse(body?["items${[tempIndex]}[area_id]"].toString() ?? "");
+        // int tempIndex = selctedIssueId!.items!
+        //     .indexWhere((data) => data.issueId.toString() == issueId);
+        // if (tempIndex != -1) {
+        //   selctedIssueId!.items![tempIndex].item =
+        //       body?["items${[tempIndex]}[item]"].toString();
+        //   selctedIssueId!.items![tempIndex].issueType =
+        //       body?["items${[tempIndex]}[issue_type][]"].toString();
+        //   selctedIssueId!.items![tempIndex].areaId =
+        //       int.parse(body?["items${[tempIndex]}[area_id]"].toString() ?? "");
 
-          selctedIssueId!.items![tempIndex].quantity = int.parse(
-              body?["items${[tempIndex]}[quantity]"].toString() ?? "");
-          selctedIssueId!.items![tempIndex].charge =
-              body?["items${[tempIndex]}[charge]"].toString();
-          Fluttertoast.showToast(
-              backgroundColor: NewColors.greencolor,
-              textColor: NewColors.whitecolor,
-              fontSize: 15.r,
-              msg: apiResponse.response['message']);
-          Navigator.pop(context);
-        } else {
-          print(tempIndex);
-        }
+        //   selctedIssueId!.items![tempIndex].quantity = int.parse(
+        //       body?["items${[tempIndex]}[quantity]"].toString() ?? "");
+        //   selctedIssueId!.items![tempIndex].charge =
+        //       body?["items${[tempIndex]}[charge]"].toString();
+        Fluttertoast.showToast(
+            backgroundColor: NewColors.greencolor,
+            textColor: NewColors.whitecolor,
+            fontSize: 15.r,
+            msg: apiResponse.response['message']);
+        Navigator.pop(context, true);
+        // } else {
+        //   print(tempIndex);
+        // }
       }
     } catch (e) {
       log("Error in Editing Issue");

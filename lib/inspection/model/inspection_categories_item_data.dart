@@ -255,9 +255,9 @@ class RunItems {
   int? updatedBy;
   String? createdAt;
   String? updatedAt;
-  List<Null>? goodPhotos;
-  List<Null>? beforePhotos;
-  List<Null>? afterPhotos;
+  List? goodPhotos;
+  List? beforePhotos;
+  List? afterPhotos;
 
   RunItems(
       {this.id,
@@ -294,19 +294,19 @@ class RunItems {
     createdAt = json['created_at'];
     updatedAt = json['updated_at'];
     if (json['good_photos'] != null) {
-      goodPhotos = <Null>[];
+      goodPhotos = [];
       json['good_photos'].forEach((v) {
         goodPhotos!.add((v));
       });
     }
     if (json['before_photos'] != null) {
-      beforePhotos = <Null>[];
+      beforePhotos = [];
       json['before_photos'].forEach((v) {
         beforePhotos!.add((v));
       });
     }
     if (json['after_photos'] != null) {
-      afterPhotos = <Null>[];
+      afterPhotos = [];
       json['after_photos'].forEach((v) {
         afterPhotos!.add((v));
       });

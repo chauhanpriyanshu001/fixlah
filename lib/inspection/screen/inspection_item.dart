@@ -33,6 +33,13 @@ class _InspectionItemState extends State<InspectionItem> {
   TextEditingController remark = TextEditingController();
   var formKey = GlobalKey<FormState>();
   Map<String, dynamic> body = {};
+  TextEditingController conditionDescription = TextEditingController();
+  CarouselSliderController goodPhotosController = CarouselSliderController();
+  CarouselSliderController beforePhotosController = CarouselSliderController();
+  CarouselSliderController afterPhotosController = CarouselSliderController();
+  CarouselSliderController referencePhotosController =
+      CarouselSliderController();
+
   bool loading = false;
   List statusList = [
     {
@@ -90,7 +97,10 @@ class _InspectionItemState extends State<InspectionItem> {
                 : "Not Applicable";
       }
 
-      if (data.condition == "Not Good") {}
+      if (data.condition == "Not Good") {
+        conditionDescription.text = data.conditionDescription ?? "";
+        setState(() {});
+      }
       if (data.overallGrade != null) {
         print(data.overallGrade);
         selected = data.overallGrade == "A"
@@ -101,6 +111,21 @@ class _InspectionItemState extends State<InspectionItem> {
                     ? "Need Re-Cleaning"
                     : "Not Applicable";
       }
+      if (data.overallCompliance == 1 &&
+          data.overallGrade == null &&
+          data.condition == null) {
+        selected = "Yes";
+      }
+      if (data.overallCompliance == 0 &&
+          data.overallGrade == null &&
+          data.condition == null) {
+        selected = "No";
+      }
+      if (data.overallCompliance == 2 &&
+          data.overallGrade == null &&
+          data.condition == null) {
+        selected = "Not Applicable";
+      }
       loading = false;
       setState(() {});
     });
@@ -109,6 +134,7 @@ class _InspectionItemState extends State<InspectionItem> {
   @override
   void dispose() {
     remark.dispose();
+    conditionDescription.dispose();
     super.dispose();
   }
 
@@ -247,45 +273,83 @@ class _InspectionItemState extends State<InspectionItem> {
                                   SizedBox(
                                     width: fullWidth,
                                     height: 210.r,
-                                    child: CarouselSlider.builder(
-                                        itemCount: data.categoryItem!
-                                            .referencePhotos!.length,
-                                        disableGesture: false,
-                                        itemBuilder:
-                                            (context, index, realIndex) {
-                                          String url = data
-                                              .categoryItem!
-                                              .referencePhotos![index]
-                                              .photoUrl!;
-                                          return InkWell(
-                                            onTap: () {
-                                              naviagteTo(context,
-                                                  builder: (context) =>
-                                                      ImageViewer(
-                                                          index: index,
-                                                          itemImages: data
-                                                              .categoryItem!
-                                                              .referencePhotos!,
-                                                          baseUrl: ""));
+                                    child: Stack(
+                                      alignment: Alignment.center,
+                                      children: [
+                                        CarouselSlider.builder(
+                                            carouselController:
+                                                referencePhotosController,
+                                            itemCount: data.categoryItem!
+                                                .referencePhotos!.length,
+                                            disableGesture: false,
+                                            itemBuilder:
+                                                (context, index, realIndex) {
+                                              String url = data
+                                                  .categoryItem!
+                                                  .referencePhotos![index]
+                                                  .photoUrl!;
+                                              return InkWell(
+                                                onTap: () {
+                                                  naviagteTo(context,
+                                                      builder: (context) =>
+                                                          ImageViewer(
+                                                              index: index,
+                                                              itemImages: data
+                                                                  .categoryItem!
+                                                                  .referencePhotos!,
+                                                              baseUrl: ""));
+                                                },
+                                                child: Container(
+                                                  decoration: BoxDecoration(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              30),
+                                                      image: DecorationImage(
+                                                          fit: BoxFit.cover,
+                                                          image: NetworkImage(
+                                                              url))),
+                                                  width: fullWidth,
+                                                  height: 200.r,
+                                                ),
+                                              );
                                             },
-                                            child: Container(
-                                              decoration: BoxDecoration(
-                                                  borderRadius:
-                                                      BorderRadius.circular(30),
-                                                  image: DecorationImage(
-                                                      fit: BoxFit.cover,
-                                                      image:
-                                                          NetworkImage(url))),
-                                              width: fullWidth,
-                                              height: 200.r,
+                                            options: CarouselOptions(
+                                              viewportFraction: 1,
+                                              enableInfiniteScroll: false,
+                                              autoPlay: true,
+                                            )),
+                                        if ((data.categoryItem!.referencePhotos
+                                                    ?.length ??
+                                                0) >
+                                            1)
+                                          Positioned(
+                                            left: 0,
+                                            child: IconButton(
+                                              onPressed: () =>
+                                                  referencePhotosController
+                                                      .previousPage(),
+                                              icon: const Icon(
+                                                  Icons.arrow_back_ios,
+                                                  color: NewColors.whitecolor),
                                             ),
-                                          );
-                                        },
-                                        options: CarouselOptions(
-                                          viewportFraction: 1,
-                                          enableInfiniteScroll: false,
-                                          autoPlay: true,
-                                        )),
+                                          ),
+                                        if ((data.categoryItem!.referencePhotos
+                                                    ?.length ??
+                                                0) >
+                                            1)
+                                          Positioned(
+                                            right: 0,
+                                            child: IconButton(
+                                              onPressed: () =>
+                                                  referencePhotosController
+                                                      .nextPage(),
+                                              icon: const Icon(
+                                                  Icons.arrow_forward_ios,
+                                                  color: NewColors.whitecolor),
+                                            ),
+                                          ),
+                                      ],
+                                    ),
                                   ),
                               ],
                             ),
@@ -378,29 +442,87 @@ class _InspectionItemState extends State<InspectionItem> {
                                         if (selected == "Pass")
                                           Column(
                                             children: [
-                                              ListView.separated(
-                                                physics:
-                                                    const NeverScrollableScrollPhysics(),
-                                                separatorBuilder:
-                                                    (context, index) =>
-                                                        SizedBox(
-                                                  height: aspectRatio * 10,
+                                              if (data.goodPhotos?.isEmpty !=
+                                                  true)
+                                                Stack(
+                                                  alignment: Alignment.center,
+                                                  children: [
+                                                    SizedBox(
+                                                      width: fullWidth,
+                                                      height: fullHeight / 5,
+                                                      child: CarouselSlider
+                                                          .builder(
+                                                        carouselController:
+                                                            goodPhotosController,
+                                                        itemCount: data
+                                                                .goodPhotos
+                                                                ?.length ??
+                                                            0,
+                                                        itemBuilder: (context,
+                                                            index, realIndex) {
+                                                          InspectionPhoto file =
+                                                              data.goodPhotos![
+                                                                  index];
+                                                          return ImageWidget(
+                                                            file: file,
+                                                            inspectionProvider:
+                                                                inspectionProvider,
+                                                            type: "good",
+                                                          );
+                                                        },
+                                                        options:
+                                                            CarouselOptions(
+                                                          viewportFraction: 1,
+                                                          enableInfiniteScroll:
+                                                              false,
+                                                          height:
+                                                              fullHeight / 5,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    if ((data.goodPhotos
+                                                                ?.length ??
+                                                            0) >
+                                                        1)
+                                                      Positioned(
+                                                        left: 0,
+                                                        child: IconButton(
+                                                          onPressed: () =>
+                                                              goodPhotosController
+                                                                  .previousPage(),
+                                                          icon: const Icon(
+                                                              Icons
+                                                                  .arrow_back_ios,
+                                                              color: Colors
+                                                                  .black54),
+                                                        ),
+                                                      ),
+                                                    if ((data.goodPhotos
+                                                                ?.length ??
+                                                            0) >
+                                                        1)
+                                                      Positioned(
+                                                        right: 0,
+                                                        child: IconButton(
+                                                          onPressed: () =>
+                                                              goodPhotosController
+                                                                  .nextPage(),
+                                                          icon: const Icon(
+                                                              Icons
+                                                                  .arrow_forward_ios,
+                                                              color: Colors
+                                                                  .black54),
+                                                        ),
+                                                      ),
+                                                  ],
                                                 ),
-                                                itemCount:
-                                                    data.goodPhotos?.length ??
-                                                        0,
-                                                shrinkWrap: true,
-                                                itemBuilder: (context, index) {
-                                                  InspectionPhoto file =
-                                                      data.goodPhotos![index];
-                                                  return ImageWidget(
-                                                    file: file,
-                                                    inspectionProvider:
-                                                        inspectionProvider,
-                                                    type: "good",
-                                                  );
-                                                },
+                                              SizedBox(
+                                                height: 10.r,
                                               ),
+                                              data.goodPhotos?.isEmpty == true
+                                                  ? Text("No Images Added")
+                                                  : Text(
+                                                      "Total Images : ${data.goodPhotos?.length ?? 0}"),
                                               SizedBox(
                                                 height: 10.r,
                                               ),
@@ -464,70 +586,85 @@ class _InspectionItemState extends State<InspectionItem> {
                                                 height: aspectRatio * 10,
                                               ),
                                               DropdownButtonFormField(
-                                                  validator: (value) {
-                                                    if (value == null ||
-                                                        data.conditionDescription ==
-                                                            "") {
-                                                      return 'Please select Description';
-                                                    }
-                                                    return null;
-                                                  },
-                                                  icon: const Icon(
-                                                    Icons
-                                                        .arrow_drop_down_circle_sharp,
-                                                    color: NewColors
-                                                        .secondayFullcolor,
+                                                validator: (value) {
+                                                  if (value == null ||
+                                                      data.conditionDescription ==
+                                                          "") {
+                                                    return 'Please select Description';
+                                                  }
+                                                  return null;
+                                                },
+                                                icon: const Icon(
+                                                  Icons
+                                                      .arrow_drop_down_circle_sharp,
+                                                  color: NewColors
+                                                      .secondayFullcolor,
+                                                ),
+                                                dropdownColor:
+                                                    NewColors.whitecolor,
+                                                decoration: InputDecoration(
+                                                  border: OutlineInputBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            50),
+                                                    borderSide: const BorderSide(
+                                                        color: NewColors
+                                                            .secondayFullcolor,
+                                                        width: 2),
                                                   ),
-                                                  dropdownColor:
-                                                      NewColors.whitecolor,
-                                                  decoration: InputDecoration(
-                                                    border: OutlineInputBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              50),
-                                                      borderSide: const BorderSide(
-                                                          color: NewColors
-                                                              .secondayFullcolor,
-                                                          width: 2),
-                                                    ),
-                                                    focusedBorder:
-                                                        OutlineInputBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              50),
-                                                      borderSide:
-                                                          const BorderSide(
-                                                              color: NewColors
-                                                                  .primary,
-                                                              width: 2),
-                                                    ),
-                                                    enabledBorder:
-                                                        OutlineInputBorder(
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              50),
-                                                      borderSide: const BorderSide(
-                                                          color: NewColors
-                                                              .secondayFullcolor,
-                                                          width: 2),
-                                                    ),
+                                                  focusedBorder:
+                                                      OutlineInputBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            50),
+                                                    borderSide:
+                                                        const BorderSide(
+                                                            color: NewColors
+                                                                .primary,
+                                                            width: 2),
                                                   ),
-                                                  items:
-                                                      issueTypeDataDropDownlistList,
-                                                  hint: Text(data
-                                                              .conditionDescription !=
-                                                          null
-                                                      ? data
-                                                          .conditionDescription!
-                                                      : "Select Condition Description"),
-                                                  onChanged: (value) {
-                                                    body.addAll({
-                                                      "condition": "Not Good",
-                                                      "condition_description":
-                                                          value!.name!
-                                                    });
-                                                    setState(() {});
-                                                  }),
+                                                  enabledBorder:
+                                                      OutlineInputBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                            50),
+                                                    borderSide: const BorderSide(
+                                                        color: NewColors
+                                                            .secondayFullcolor,
+                                                        width: 2),
+                                                  ),
+                                                ),
+                                                items: issueTypeDataList
+                                                    .map((item) =>
+                                                        DropdownMenuItem(
+                                                          value: item.name,
+                                                          child: Text(
+                                                              item.name ?? ""),
+                                                        ))
+                                                    .toList(),
+                                                initialValue:
+                                                    conditionDescription.text ==
+                                                            ""
+                                                        ? null
+                                                        : conditionDescription
+                                                            .text,
+                                                onChanged: (value) {
+                                                  body.addAll({
+                                                    "condition": "Not Good",
+                                                    "condition_description":
+                                                        value!
+                                                  });
+                                                  conditionDescription.text =
+                                                      value;
+                                                  setState(() {});
+                                                },
+                                                hint: Text(data.conditionDescription !=
+                                                            "" &&
+                                                        data.conditionDescription !=
+                                                            null
+                                                    ? data.conditionDescription!
+                                                    : "Select Condition Description"),
+                                              ),
                                               SizedBox(
                                                 height: 5.r,
                                               ),
@@ -546,34 +683,94 @@ class _InspectionItemState extends State<InspectionItem> {
                                                     ),
                                                   ],
                                                 ),
+
                                               SizedBox(
                                                 height: 5.r,
                                               ),
                                               if (data.beforePhotos?.isEmpty !=
                                                   true)
-                                                ListView.separated(
-                                                  physics:
-                                                      const NeverScrollableScrollPhysics(),
-                                                  separatorBuilder:
-                                                      (context, index) =>
-                                                          SizedBox(
-                                                    height: aspectRatio * 10,
-                                                  ),
-                                                  itemCount: data.beforePhotos
-                                                          ?.length ??
-                                                      0,
-                                                  shrinkWrap: true,
-                                                  itemBuilder:
-                                                      (context, index) {
-                                                    InspectionPhoto file = data
-                                                        .beforePhotos![index];
-                                                    return ImageWidget(
-                                                      file: file,
-                                                      inspectionProvider:
-                                                          inspectionProvider,
-                                                      type: "before",
-                                                    );
-                                                  },
+                                                Stack(
+                                                  alignment: Alignment.center,
+                                                  children: [
+                                                    SizedBox(
+                                                      width: fullWidth,
+                                                      height: fullHeight / 4,
+                                                      child: CarouselSlider
+                                                          .builder(
+                                                        carouselController:
+                                                            beforePhotosController,
+                                                        itemCount: data
+                                                                .beforePhotos
+                                                                ?.length ??
+                                                            0,
+                                                        itemBuilder: (context,
+                                                            index, realIndex) {
+                                                          InspectionPhoto file =
+                                                              data.beforePhotos![
+                                                                  index];
+                                                          return ImageWidget(
+                                                            file: file,
+                                                            inspectionProvider:
+                                                                inspectionProvider,
+                                                            type: "before",
+                                                          );
+                                                        },
+                                                        options:
+                                                            CarouselOptions(
+                                                          viewportFraction: 1,
+                                                          enableInfiniteScroll:
+                                                              false,
+                                                          height:
+                                                              fullHeight / 4,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    if ((data.beforePhotos
+                                                                ?.length ??
+                                                            0) >
+                                                        1)
+                                                      Positioned(
+                                                        left: 0,
+                                                        child: IconButton(
+                                                          onPressed: () =>
+                                                              beforePhotosController
+                                                                  .previousPage(),
+                                                          icon: const Icon(
+                                                              Icons
+                                                                  .arrow_back_ios,
+                                                              color: Colors
+                                                                  .black54),
+                                                        ),
+                                                      ),
+                                                    if ((data.beforePhotos
+                                                                ?.length ??
+                                                            0) >
+                                                        1)
+                                                      Positioned(
+                                                        right: 0,
+                                                        child: IconButton(
+                                                          onPressed: () =>
+                                                              beforePhotosController
+                                                                  .nextPage(),
+                                                          icon: const Icon(
+                                                              Icons
+                                                                  .arrow_forward_ios,
+                                                              color: Colors
+                                                                  .black54),
+                                                        ),
+                                                      ),
+                                                  ],
+                                                ),
+                                              if (data.beforePhotos?.isEmpty !=
+                                                  true)
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    Text(
+                                                      "Total Image : ${data.beforePhotos?.length}",
+                                                    ),
+                                                  ],
                                                 ),
                                               SizedBox(
                                                 height: 5.r,
@@ -640,34 +837,94 @@ class _InspectionItemState extends State<InspectionItem> {
                                                     ),
                                                   ],
                                                 ),
+
                                               SizedBox(
                                                 height: 5.r,
                                               ),
                                               if (data.afterPhotos?.isEmpty !=
                                                   true)
-                                                ListView.separated(
-                                                  physics:
-                                                      const NeverScrollableScrollPhysics(),
-                                                  separatorBuilder:
-                                                      (context, index) =>
-                                                          SizedBox(
-                                                    height: aspectRatio * 10,
-                                                  ),
-                                                  itemCount: data.afterPhotos
-                                                          ?.length ??
-                                                      0,
-                                                  shrinkWrap: true,
-                                                  itemBuilder:
-                                                      (context, index) {
-                                                    InspectionPhoto file = data
-                                                        .afterPhotos![index];
-                                                    return ImageWidget(
-                                                      file: file,
-                                                      inspectionProvider:
-                                                          inspectionProvider,
-                                                      type: "after",
-                                                    );
-                                                  },
+                                                Stack(
+                                                  alignment: Alignment.center,
+                                                  children: [
+                                                    SizedBox(
+                                                      width: fullWidth,
+                                                      height: fullHeight / 4,
+                                                      child: CarouselSlider
+                                                          .builder(
+                                                        carouselController:
+                                                            afterPhotosController,
+                                                        itemCount: data
+                                                                .afterPhotos
+                                                                ?.length ??
+                                                            0,
+                                                        itemBuilder: (context,
+                                                            index, realIndex) {
+                                                          InspectionPhoto file =
+                                                              data.afterPhotos![
+                                                                  index];
+                                                          return ImageWidget(
+                                                            file: file,
+                                                            inspectionProvider:
+                                                                inspectionProvider,
+                                                            type: "after",
+                                                          );
+                                                        },
+                                                        options:
+                                                            CarouselOptions(
+                                                          viewportFraction: 1,
+                                                          enableInfiniteScroll:
+                                                              false,
+                                                          height:
+                                                              fullHeight / 4,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    if ((data.afterPhotos
+                                                                ?.length ??
+                                                            0) >
+                                                        1)
+                                                      Positioned(
+                                                        left: 0,
+                                                        child: IconButton(
+                                                          onPressed: () =>
+                                                              afterPhotosController
+                                                                  .previousPage(),
+                                                          icon: const Icon(
+                                                              Icons
+                                                                  .arrow_back_ios,
+                                                              color: Colors
+                                                                  .black54),
+                                                        ),
+                                                      ),
+                                                    if ((data.afterPhotos
+                                                                ?.length ??
+                                                            0) >
+                                                        1)
+                                                      Positioned(
+                                                        right: 0,
+                                                        child: IconButton(
+                                                          onPressed: () =>
+                                                              afterPhotosController
+                                                                  .nextPage(),
+                                                          icon: const Icon(
+                                                              Icons
+                                                                  .arrow_forward_ios,
+                                                              color: Colors
+                                                                  .black54),
+                                                        ),
+                                                      ),
+                                                  ],
+                                                ),
+                                              if (data.afterPhotos?.isEmpty !=
+                                                  true)
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    Text(
+                                                      "Total Images : ${data.afterPhotos?.length}",
+                                                    ),
+                                                  ],
                                                 ),
                                               SizedBox(
                                                 height: 5.r,
@@ -1090,22 +1347,25 @@ class ImageWidget extends StatelessWidget {
           ),
         ),
         Positioned(
-          top: 20,
-          right: 20,
-          child: Container(
-              decoration: const BoxDecoration(
-                color: Color.fromRGBO(0, 0, 0, 0.36),
-                shape: BoxShape.circle,
-              ),
-              child: IconButton(
-                  onPressed: () {
-                    inspectionProvider.deleteItemPhoto(context,
-                        type: type, photoId: file.id!);
-                  },
-                  icon: const Icon(
-                    Icons.close,
-                    color: NewColors.whitecolor,
-                  ))),
+          top: 10,
+          right: 10,
+          child: InkWell(
+            onTap: () {
+              inspectionProvider.deleteItemPhoto(context,
+                  type: type, photoId: file.id!);
+            },
+            child: Container(
+                padding: EdgeInsets.all(5.r),
+                decoration: const BoxDecoration(
+                  color: Color.fromRGBO(0, 0, 0, 0.36),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  size: 20.r,
+                  Icons.close,
+                  color: NewColors.whitecolor,
+                )),
+          ),
         ),
       ],
     );

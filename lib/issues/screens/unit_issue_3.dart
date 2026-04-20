@@ -1,5 +1,7 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
+import 'dart:developer';
+import 'dart:io';
 import 'package:camera/camera.dart';
+import 'package:image/image.dart' as img;
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
@@ -74,6 +76,17 @@ class _CameraCaptureScreenState extends State<CameraCaptureScreen> {
   Future<void> _capture() async {
     if (controller != null && controller!.value.isInitialized) {
       final image = await controller!.takePicture();
+      // Bake orientation for iOS (fixes flipped/rotated images)
+      try {
+        final bytes = await image.readAsBytes();
+        img.Image? capturedImage = img.decodeImage(bytes);
+        if (capturedImage != null) {
+          final bakedImage = img.bakeOrientation(capturedImage);
+          await File(image.path).writeAsBytes(img.encodeJpg(bakedImage));
+        }
+      } catch (e) {
+        log("Error baking orientation: $e");
+      }
 
       context.read<IssuesProvider>().captureImage(context,
           capturedimage: image,

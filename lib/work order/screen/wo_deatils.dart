@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:camera/camera.dart';
@@ -12,7 +13,6 @@ import 'package:fixlah/config/utils.dart';
 import 'package:fixlah/config/validators.dart';
 import 'package:fixlah/issues/model/issues_model.dart';
 import 'package:fixlah/work%20order/model/work_order_detail_model.dart';
-import 'package:fixlah/work%20order/model/work_order_model.dart';
 import 'package:fixlah/work%20order/provider/work_order_provider.dart';
 import 'package:fixlah/work%20order/screen/completion_pic.dart';
 import 'package:flutter/material.dart';
@@ -21,7 +21,6 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
 
 class WoDeatils extends StatefulWidget {
   final String id;
@@ -37,6 +36,9 @@ class _WoDeatilsState extends State<WoDeatils> {
   TextEditingController time = TextEditingController();
   List<XFile> files = [];
   var formKey = GlobalKey<FormState>();
+  CarouselSliderController workOrderPhotosController = CarouselSliderController();
+  CarouselSliderController completionPhotosController = CarouselSliderController();
+
   @override
   void initState() {
     super.initState();
@@ -87,15 +89,17 @@ class _WoDeatilsState extends State<WoDeatils> {
                               fontSize: buildFontSize(30)),
                         ),
                       ),
-                      Expanded(
-                        child: Text(
-                          formateDate(value: woData.data!.createdAt!),
-                          textAlign: TextAlign.end,
-                          style: TextStyle(
-                              color: NewColors.black,
-                              fontSize: buildFontSize(30)),
-                        ),
-                      )
+                      if (woData.data?.createdBy?.createdAt != null)
+                        Expanded(
+                          child: Text(
+                            formateDate(
+                                value: woData.data?.createdBy?.createdAt ?? ""),
+                            textAlign: TextAlign.end,
+                            style: TextStyle(
+                                color: NewColors.black,
+                                fontSize: buildFontSize(30)),
+                          ),
+                        )
                     ],
                   ),
                   SizedBox(
@@ -116,7 +120,7 @@ class _WoDeatilsState extends State<WoDeatils> {
                             ),
                             children: [
                               TextSpan(
-                                text: woData.data?.createdBy?.name ?? "",
+                                text: woData.data?.createdBy?.username ?? "",
                                 style: TextStyle(
                                   fontSize: buildFontSize(25),
                                   fontWeight: FontWeight.bold,
@@ -127,15 +131,17 @@ class _WoDeatilsState extends State<WoDeatils> {
                           ),
                         ),
                       ),
-                      Expanded(
-                        child: Text(
-                          formateTime(value: woData.data!.createdAt!),
-                          textAlign: TextAlign.end,
-                          style: TextStyle(
-                              color: NewColors.secondattextcolor,
-                              fontSize: buildFontSize(27)),
-                        ),
-                      )
+                      if (woData.data?.createdBy?.createdAt != null)
+                        Expanded(
+                          child: Text(
+                            formateTime(
+                                value: woData.data?.createdBy?.createdAt ?? ""),
+                            textAlign: TextAlign.end,
+                            style: TextStyle(
+                                color: NewColors.black,
+                                fontSize: buildFontSize(30)),
+                          ),
+                        )
                     ],
                   ),
                   SizedBox(
@@ -252,7 +258,11 @@ class _WoDeatilsState extends State<WoDeatils> {
                                       fontSize: buildFontSize(25)),
                                 ),
                                 Text(
-                                  woData.data?.locationTag.toString() ?? "-",
+                                  woData.data?.issue?.block?.name.toString() !=
+                                          null
+                                      ? woData.data!.issue!.block!.name
+                                          .toString()
+                                      : "-",
                                   style: TextStyle(
                                       color: NewColors.black,
                                       fontWeight: mediumFontWeight,
@@ -270,7 +280,7 @@ class _WoDeatilsState extends State<WoDeatils> {
                                       fontSize: buildFontSize(25)),
                                 ),
                                 Text(
-                                  woData.data!.locationTag ?? "-",
+                                  woData.data?.issue?.unit?.unitNo ?? "-",
                                   style: TextStyle(
                                       color: NewColors.black,
                                       fontWeight: mediumFontWeight,
@@ -339,7 +349,7 @@ class _WoDeatilsState extends State<WoDeatils> {
                                   ),
                                   children: [
                                     TextSpan(
-                                      text: woData.data!.assignedTo ?? "",
+                                      text: woData.data!.assignee?.name ?? "",
                                       style: TextStyle(
                                         fontSize: buildFontSize(25),
                                         fontWeight: FontWeight.bold,
@@ -383,13 +393,15 @@ class _WoDeatilsState extends State<WoDeatils> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              "Unit No",
+                              "Asset Assigned",
                               style: TextStyle(
                                   color: NewColors.secondattextcolor,
                                   fontSize: buildFontSize(25)),
                             ),
                             Text(
-                              woData.data!.issueItem?.item ?? "",
+                              workOrderProvider
+                                      .assetDetails.data?.clientShownName ??
+                                  "",
                               style: TextStyle(
                                   color: NewColors.workordercolor,
                                   fontWeight: boldFontWeight,
@@ -410,7 +422,7 @@ class _WoDeatilsState extends State<WoDeatils> {
                                   fontSize: buildFontSize(25)),
                             ),
                             Text(
-                              woData.data!.locationTag ?? "-",
+                              woData.data!.locationTag?.name ?? "-",
                               style: TextStyle(
                                   color: NewColors.black,
                                   fontWeight: boldFontWeight,
@@ -489,42 +501,69 @@ class _WoDeatilsState extends State<WoDeatils> {
                   SizedBox(
                     height: aspectRatio * 40,
                   ),
-                  CarouselSlider.builder(
-                      itemCount: woData.data!.workorderPhotos?.length ?? 0,
-                      itemBuilder: (context, index, realIndex) {
-                        return InkWell(
-                          onTap: () {
-                            List<Photos> itemImages = [];
-                            for (var i = 0;
-                                i < woData.data!.workorderPhotos!.length;
-                                i++) {
-                              itemImages.add(Photos.fromJson(woData
-                                  .data!.workorderPhotos![index]
-                                  .toJson()));
-                            }
-                            naviagteTo(context,
-                                builder: (context) => ImageViewer(
-                                    index: index,
-                                    itemImages: itemImages,
-                                    baseUrl: AppConstants.woImageBaseUrl));
-                          },
-                          child: Container(
-                            width: fullWidth,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              image: DecorationImage(
-                                fit: BoxFit.cover,
-                                image: NetworkImage(
-                                    "${AppConstants.woImageBaseUrl}${woData.data!.workorderPhotos?[index].photoPath}"),
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      CarouselSlider.builder(
+                          carouselController: workOrderPhotosController,
+                          itemCount: woData.data!.workorderPhotos?.length ?? 0,
+                          itemBuilder: (context, index, realIndex) {
+                            return InkWell(
+                              onTap: () {
+                                List<Photos> itemImages = [];
+                                for (var i = 0;
+                                    i < woData.data!.workorderPhotos!.length;
+                                    i++) {
+                                  itemImages.add(Photos.fromJson(woData
+                                      .data!.workorderPhotos![index]
+                                      .toJson()));
+                                }
+                                naviagteTo(context,
+                                    builder: (context) => ImageViewer(
+                                        index: index,
+                                        itemImages: itemImages,
+                                        baseUrl: AppConstants.woImageBaseUrl));
+                              },
+                              child: Container(
+                                width: fullWidth,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(20),
+                                  image: DecorationImage(
+                                    fit: BoxFit.cover,
+                                    image: NetworkImage(
+                                        "${AppConstants.woImageBaseUrl}${woData.data!.workorderPhotos?[index].photoPath}"),
+                                  ),
+                                ),
                               ),
-                            ),
+                            );
+                          },
+                          options: CarouselOptions(
+                              viewportFraction: 1,
+                              autoPlay: true,
+                              enableInfiniteScroll: false)),
+                      if ((woData.data!.workorderPhotos?.length ?? 0) > 1)
+                        Positioned(
+                          left: 0,
+                          child: IconButton(
+                            onPressed: () =>
+                                workOrderPhotosController.previousPage(),
+                            icon: const Icon(Icons.arrow_back_ios,
+                                color: Colors.white70),
                           ),
-                        );
-                      },
-                      options: CarouselOptions(
-                          viewportFraction: 1,
-                          autoPlay: true,
-                          enableInfiniteScroll: false)),
+                        ),
+                      if ((woData.data!.workorderPhotos?.length ?? 0) > 1)
+                        Positioned(
+                          right: 0,
+                          child: IconButton(
+                            onPressed: () =>
+                                workOrderPhotosController.nextPage(),
+                            icon: const Icon(Icons.arrow_forward_ios,
+                                color: Colors.white70),
+                          ),
+                        ),
+                    ],
+                  ),
+
                   SizedBox(
                     height: aspectRatio * 30,
                   ),
@@ -547,7 +586,7 @@ class _WoDeatilsState extends State<WoDeatils> {
                             children: [
                               Expanded(
                                 child: CustomTextFields(
-                                    validator: Validators.validateRequired,
+                                    // validator: Validators.validateRequired,
                                     label: "Actual End Date",
                                     controller: date,
                                     onTap: () async {
@@ -560,6 +599,22 @@ class _WoDeatilsState extends State<WoDeatils> {
                                       if (selcteddate != null) {
                                         final f = DateFormat('yyyy-MM-dd');
                                         date.text = f.format(selcteddate);
+                                        // Clear time if it's now invalid for today
+                                        if (date.text ==
+                                                DateFormat('yyyy-MM-dd')
+                                                    .format(DateTime.now()) &&
+                                            time.text.isNotEmpty) {
+                                          TimeOfDay nowTime = TimeOfDay.now();
+                                          List<String> parts =
+                                              time.text.split(":");
+                                          int h = int.parse(parts[0]);
+                                          int m = int.parse(parts[1]);
+                                          if (h < nowTime.hour ||
+                                              (h == nowTime.hour &&
+                                                  m < nowTime.minute)) {
+                                            time.clear();
+                                          }
+                                        }
                                         setState(() {});
                                       }
                                     },
@@ -572,16 +627,29 @@ class _WoDeatilsState extends State<WoDeatils> {
                               Expanded(
                                 child: CustomTextFields(
                                     label: "Actual End Time",
-                                    validator: Validators.validateRequired,
+                                    // validator: Validators.validateRequired,
                                     controller: time,
                                     onTap: () async {
                                       setState(() {});
                                       TimeOfDay? starTime =
                                           await showTimePicker(
                                               context: context,
-                                              initialTime: const TimeOfDay(
-                                                  hour: 12, minute: 00));
+                                              initialTime: TimeOfDay.now());
                                       if (starTime != null) {
+                                        if (date.text ==
+                                            DateFormat('yyyy-MM-dd')
+                                                .format(DateTime.now())) {
+                                          TimeOfDay nowTime = TimeOfDay.now();
+                                          if (starTime.hour < nowTime.hour ||
+                                              (starTime.hour == nowTime.hour &&
+                                                  starTime.minute <
+                                                      nowTime.minute)) {
+                                            Fluttertoast.showToast(
+                                                msg:
+                                                    "Cannot select previous time");
+                                            return;
+                                          }
+                                        }
                                         final String time24 =
                                             '${starTime.hour.toString().padLeft(2, '0')}:${starTime.minute.toString().padLeft(2, '0')}';
                                         print(time24);
@@ -598,48 +666,82 @@ class _WoDeatilsState extends State<WoDeatils> {
                           SizedBox(
                             height: aspectRatio * 20,
                           ),
-                          ListView.separated(
-                            physics: const NeverScrollableScrollPhysics(),
-                            separatorBuilder: (context, index) => SizedBox(
-                              height: aspectRatio * 10,
-                            ),
-                            itemCount: files.length,
-                            shrinkWrap: true,
-                            itemBuilder: (context, index) {
-                              File file = File(files[index].path);
-                              return Stack(
-                                children: [
-                                  Container(
-                                    color: NewColors.whitecolor,
-                                    child: Center(
-                                      child: Image.file(
-                                        file,
-                                        height: fullHeight / 5,
-                                      ),
+                          if (files.isNotEmpty)
+                            Stack(
+                              alignment: Alignment.center,
+                              children: [
+                                CarouselSlider.builder(
+                                  carouselController:
+                                      completionPhotosController,
+                                  itemCount: files.length,
+                                  itemBuilder: (context, index, realIndex) {
+                                    File file = File(files[index].path);
+                                    return Stack(
+                                      children: [
+                                        Container(
+                                          width: fullWidth,
+                                          color: NewColors.whitecolor,
+                                          child: Center(
+                                            child: Image.file(
+                                              file,
+                                              height: fullHeight / 5,
+                                              fit: BoxFit.contain,
+                                            ),
+                                          ),
+                                        ),
+                                        Positioned(
+                                          top: 10,
+                                          right: 10,
+                                          child: Container(
+                                              decoration: const BoxDecoration(
+                                                color: Color.fromRGBO(
+                                                    0, 0, 0, 0.36),
+                                                shape: BoxShape.circle,
+                                              ),
+                                              child: IconButton(
+                                                  onPressed: () {
+                                                    files.removeAt(index);
+                                                    setState(() {});
+                                                  },
+                                                  icon: const Icon(
+                                                    Icons.close,
+                                                    color: NewColors.whitecolor,
+                                                  ))),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                  options: CarouselOptions(
+                                    viewportFraction: 1,
+                                    aspectRatio: 16 / 9,
+                                    height: fullHeight / 5,
+                                    enableInfiniteScroll: false,
+                                  ),
+                                ),
+                                if (files.length > 1)
+                                  Positioned(
+                                    left: 0,
+                                    child: IconButton(
+                                      onPressed: () =>
+                                          completionPhotosController
+                                              .previousPage(),
+                                      icon: const Icon(Icons.arrow_back_ios,
+                                          color: Colors.black54),
                                     ),
                                   ),
+                                if (files.length > 1)
                                   Positioned(
-                                    top: 20,
-                                    right: 20,
-                                    child: Container(
-                                        decoration: const BoxDecoration(
-                                          color: Color.fromRGBO(0, 0, 0, 0.36),
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: IconButton(
-                                            onPressed: () {
-                                              files.removeAt(index);
-                                              setState(() {});
-                                            },
-                                            icon: const Icon(
-                                              Icons.close,
-                                              color: NewColors.whitecolor,
-                                            ))),
+                                    right: 0,
+                                    child: IconButton(
+                                      onPressed: () =>
+                                          completionPhotosController.nextPage(),
+                                      icon: const Icon(Icons.arrow_forward_ios,
+                                          color: Colors.black54),
+                                    ),
                                   ),
-                                ],
-                              );
-                            },
-                          ),
+                              ],
+                            ),
+
                           SizedBox(
                             height: aspectRatio * 20,
                           ),
@@ -712,11 +814,38 @@ class _WoDeatilsState extends State<WoDeatils> {
               onTap: () {
                 if (formKey.currentState!.validate()) {
                   if (files.length != 0) {
+                    DateTime now = DateTime.now();
+                    if (date.text.isEmpty) {
+                      date.text = DateFormat('yyyy-MM-dd').format(now);
+                    }
+                    if (time.text.isEmpty) {
+                      time.text = DateFormat('HH:mm').format(now);
+                    }
+
+                    String selectedDate = date.text;
+                    String selectedTime = time.text;
+
+                    // Auto-adjust if selected date/time is in the past
+                    try {
+                      DateTime selectedDateTime =
+                          DateFormat('yyyy-MM-dd HH:mm')
+                              .parse("$selectedDate $selectedTime");
+                      if (selectedDateTime.isBefore(now)) {
+                        selectedDate = DateFormat('yyyy-MM-dd').format(now);
+                        selectedTime = DateFormat('HH:mm').format(now);
+                        date.text = selectedDate;
+                        time.text = selectedTime;
+                      }
+                      setState(() {});
+                    } catch (e) {
+                      log("Date parsing error: $e");
+                    }
+
                     workOrderProvider.completeWO(context,
                         id: woData.data!.id.toString(),
                         body: {
-                          "actual_end_date": date.text,
-                          "actual_end_time": time.text,
+                          "actual_end_date": selectedDate,
+                          "actual_end_time": selectedTime,
                           "completion_remarks": remark.text
                         },
                         file: files);

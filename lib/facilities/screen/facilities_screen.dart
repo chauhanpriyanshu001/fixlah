@@ -80,74 +80,81 @@ class _FacilitiesScreenState extends State<FacilitiesScreen> {
                       facilitiesProvider.facilityList.data!.data![index];
                   bool selctionvalue =
                       selectedFacilities.contains(facilitiData.id);
-                  return InkWell(
-                    onTap: () {
-                      facilitiesProvider.onFacilitiChange(context,
-                          name: facilitiData.name, value: facilitiData.id);
-                    },
-                    child: Stack(
-                      children: [
-                        Container(
-                          width: fullWidth,
-                          height: fullHeight / 4,
-                          decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              color: NewColors.whitecolor,
-                              image: DecorationImage(
-                                  fit: BoxFit.cover,
-                                  image: AssetImage(facilitiesProvider
-                                      .facilitiesImages
-                                      .firstWhere((element) =>
-                                          element['value'] ==
-                                          facilitiData.name
-                                              ?.toLowerCase())['image']))),
-                        ),
-                        Container(
-                          height: fullHeight / 4,
-                          padding: const EdgeInsets.all(10),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            mainAxisAlignment: MainAxisAlignment.end,
+                  return approvedFacilities.contains(facilitiData.id.toString())
+                      ? InkWell(
+                          onTap: () {
+                            facilitiesProvider.onFacilitiChange(context,
+                                name: facilitiData.name,
+                                value: facilitiData.id);
+                          },
+                          child: Stack(
                             children: [
                               Container(
-                                padding: EdgeInsets.symmetric(
-                                    vertical: 2.r, horizontal: 10.r),
+                                width: fullWidth,
+                                height: fullHeight / 4,
                                 decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(100),
-                                    color: NewColors.whitecolor),
+                                    borderRadius: BorderRadius.circular(20),
+                                    color: NewColors.whitecolor,
+                                    image: DecorationImage(
+                                        fit: BoxFit.cover,
+                                        image: AssetImage(facilitiesProvider
+                                                .facilitiesImages
+                                                .firstWhere((element) =>
+                                                    element['value'] ==
+                                                    facilitiData.name
+                                                        ?.toLowerCase())[
+                                            'image']))),
+                              ),
+                              Container(
+                                height: fullHeight / 4,
+                                padding: const EdgeInsets.all(10),
                                 child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
-                                    Text(
-                                      facilitiData.name ?? "",
-                                      style: TextStyle(
-                                          color: NewColors.black,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 15.r),
+                                    Container(
+                                      padding: EdgeInsets.symmetric(
+                                          vertical: 2.r, horizontal: 10.r),
+                                      decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(100),
+                                          color: NewColors.whitecolor),
+                                      child: Row(
+                                        children: [
+                                          Text(
+                                            facilitiData.name ?? "",
+                                            style: TextStyle(
+                                                color: NewColors.black,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 15.r),
+                                          ),
+                                          Checkbox(
+                                              side: BorderSide.none,
+                                              activeColor:
+                                                  NewColors.secondaycolor,
+                                              fillColor: WidgetStatePropertyAll(
+                                                  selctionvalue
+                                                      ? NewColors.primary
+                                                      : NewColors
+                                                          .secondaycolor),
+                                              shape: const CircleBorder(),
+                                              value: selctionvalue,
+                                              onChanged: (value) {
+                                                facilitiesProvider
+                                                    .onFacilitiChange(context,
+                                                        name: facilitiData.name,
+                                                        value: facilitiData.id);
+                                              }),
+                                        ],
+                                      ),
                                     ),
-                                    Checkbox(
-                                        side: BorderSide.none,
-                                        activeColor: NewColors.secondaycolor,
-                                        fillColor: WidgetStatePropertyAll(
-                                            selctionvalue
-                                                ? NewColors.primary
-                                                : NewColors.secondaycolor),
-                                        shape: const CircleBorder(),
-                                        value: selctionvalue,
-                                        onChanged: (value) {
-                                          facilitiesProvider.onFacilitiChange(
-                                              context,
-                                              name: facilitiData.name,
-                                              value: facilitiData.id);
-                                        }),
                                   ],
                                 ),
-                              ),
+                              )
                             ],
                           ),
                         )
-                      ],
-                    ),
-                  );
+                      : SizedBox();
                 });
       }),
     );

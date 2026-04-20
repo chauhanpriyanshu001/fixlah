@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:face_camera/face_camera.dart';
+import 'package:image/image.dart' as img;
 import 'package:fixlah/auth/provider/login_provider.dart';
 import 'package:fixlah/auth/screen/confirm_face.dart';
 import 'package:fixlah/config/colors.dart';
@@ -27,6 +28,17 @@ class _FaceDetectorState extends State<FaceDetector> {
       enableAudio: false,
       defaultCameraLens: CameraLens.front,
       onCapture: (File? image) async {
+        // Bake orientation
+        try {
+          final bytes = await image!.readAsBytes();
+          img.Image? capturedImage = img.decodeImage(bytes);
+          if (capturedImage != null) {
+            final bakedImage = img.bakeOrientation(capturedImage);
+            await image.writeAsBytes(img.encodeJpg(bakedImage));
+          }
+        } catch (e) {
+          debugPrint("Error baking face orientation: $e");
+        }
         await context
             .read<LoginState>()
             .saveFaceImage(context, imageFile: image!);

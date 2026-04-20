@@ -2,6 +2,7 @@
 
 import 'package:fixlah/auth/provider/login_provider.dart';
 import 'package:fixlah/auth/screen/face_detector.dart';
+import 'package:fixlah/common/version_show.dart';
 
 import 'package:fixlah/config/colors.dart';
 import 'package:fixlah/config/constants.dart';
@@ -135,6 +136,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         color: NewColors.red,
                       ),
                     ),
+                    ListTile(
+                      onTap: () async {
+                        context.read<LoginState>().logOut(context);
+                      },
+                      title: const VersionWidget(),
+                    ),
                   ],
                 );
         }),
@@ -229,7 +236,8 @@ class _HomeScreenState extends State<HomeScreen> {
               SizedBox(
                 height: 15.r,
               ),
-              if (checkPermission(permit: "all issues"))
+              if (checkPermission(permit: "all issues") ||
+                  checkPermission(permit: "dashboard issue link"))
                 TypeCard(
                   bgColor: NewColors.issuesBgcolor,
                   title: "Issues",
@@ -252,7 +260,8 @@ class _HomeScreenState extends State<HomeScreen> {
               SizedBox(
                 height: aspectRatio * 30,
               ),
-              if (checkPermission(permit: "view work order"))
+              if (checkPermission(permit: "view work order") ||
+                  checkPermission(permit: "dashboard work order link"))
                 TypeCard(
                   bgColor: NewColors.workorderBgcolor,
                   titleColor: NewColors.workordercolor,
@@ -281,7 +290,8 @@ class _HomeScreenState extends State<HomeScreen> {
               SizedBox(
                 height: aspectRatio * 30,
               ),
-              if (checkPermission(permit: "view inspections"))
+              if (checkPermission(permit: "view inspections") ||
+                  checkPermission(permit: " dashboard inspection link"))
                 TypeCard(
                   bgColor: NewColors.inspectionsBgcolor,
                   titleColor: NewColors.inspectionscolor,

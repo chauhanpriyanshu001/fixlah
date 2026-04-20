@@ -13,7 +13,7 @@ import 'package:fixlah/facilities/model/unit_data_model.dart';
 import 'package:fixlah/facilities/provider/facilities_provider.dart';
 
 import 'package:fixlah/issues/provider/issues_provider.dart';
-import 'package:fixlah/issues/screens/unit_issue_3.dart';
+import 'package:fixlah/issues/screens/unit_issue_final.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -89,9 +89,8 @@ class _UnitIssue2State extends State<UnitIssue2> {
                           Navigator.push(
                               context,
                               MaterialPageRoute(
-                                  builder: (context) =>
-                                      const CameraCaptureScreen(
-                                        goBack: false,
+                                  builder: (context) => const UnitIssueFinal(
+                                      // goBack: false,
                                       ))).then((value) {
                             if (value) {
                               Navigator.pop(context, true);
@@ -220,7 +219,9 @@ class _UnitIssue2State extends State<UnitIssue2> {
                             label: "Unit No",
                             controller: unitNo,
                             readOnly: true,
-                            validator: Validators.validateRequired,
+                            validator: blocktName.text == "Others"
+                                ? null
+                                : Validators.validateRequired,
                             onTap: () async {
                               issuesProvider.changeQrStatus(false);
                               if (facilitiesProvider.unitList.length != 0) {
@@ -367,15 +368,18 @@ class _UnitIssue2State extends State<UnitIssue2> {
                 unitNo.text = "";
                 issueType = "";
                 log(blockResponse.floors.toString());
-                print(blockResponse.floors!.length);
-                print(blockResponse.floors![0].name ?? "--");
+                // print(blockResponse.floors!.length);
+                // print(blockResponse.floors![0].name ?? "--");
                 // print(blockResponse.onefmBlockInternalId ??
                 //     "--");
                 // print(blockResponse.facilityId ?? "--");
 
                 issuesProvider.createIssueDataController(
                     {"facility_block_id": blockResponse.id!});
-                if (selectedIssueTypee == "Unit") {
+                if (blockResponse.name == "Others") {
+                  issueType = "NON-CREAM";
+                  issuesProvider.createIssueDataController({"cream_unit": 0});
+                } else if (selectedIssueTypee == "Unit") {
                   facilitiesProvider.getUnit(context,
                       facilityId:
                           issuesProvider.createIssue['facility_id'].toString(),
@@ -386,7 +390,6 @@ class _UnitIssue2State extends State<UnitIssue2> {
                       {"client_id": "", "cream_unit": 0});
 
                   issueType = "NON-CREAM";
-                  setState(() {});
                 }
 
                 blocktName.text = blockResponse.name!;

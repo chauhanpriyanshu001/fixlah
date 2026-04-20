@@ -128,7 +128,7 @@ class _IssuesDetailsState extends State<IssuesDetails> {
                       ),
                       children: [
                         TextSpan(
-                          text: issueData.createdBy!.name ?? "",
+                          text: issueData.createdBy!.username ?? "",
                           style: TextStyle(
                             fontSize: buildFontSize(25),
                             fontWeight: FontWeight.bold,
@@ -296,7 +296,7 @@ class _IssuesDetailsState extends State<IssuesDetails> {
   }
 }
 
-class IssueItemCard extends StatelessWidget {
+class IssueItemCard extends StatefulWidget {
   final IssueItem issueItem;
   final IssueData issueData;
   const IssueItemCard({
@@ -306,12 +306,19 @@ class IssueItemCard extends StatelessWidget {
   });
 
   @override
+  State<IssueItemCard> createState() => _IssueItemCardState();
+}
+
+class _IssueItemCardState extends State<IssueItemCard> {
+  CarouselSliderController carouselSliderController = CarouselSliderController();
+
+  @override
   Widget build(BuildContext context) {
     List<Photos>? itemImages = [];
-    for (var i = 0; i < issueData.photos!.length; i++) {
-      issueData.photos?[i];
-      if (issueItem.id == issueData.photos?[i].issueItemId) {
-        itemImages.add(issueData.photos?[i] ?? Photos());
+    for (var i = 0; i < widget.issueData.photos!.length; i++) {
+      widget.issueData.photos?[i];
+      if (widget.issueItem.id == widget.issueData.photos?[i].issueItemId) {
+        itemImages.add(widget.issueData.photos?[i] ?? Photos());
       }
     }
 
@@ -319,11 +326,13 @@ class IssueItemCard extends StatelessWidget {
       children: [
         // TOP
         Stack(
+          alignment: Alignment.center,
           children: [
             SizedBox(
               width: fullWidth,
               height: 210.r,
               child: CarouselSlider.builder(
+                  carouselController: carouselSliderController,
                   itemCount: itemImages.length,
                   disableGesture: false,
                   itemBuilder: (context, index, realIndex) {
@@ -361,6 +370,23 @@ class IssueItemCard extends StatelessWidget {
                     autoPlay: true,
                   )),
             ),
+            if (itemImages.length > 1)
+              Positioned(
+                left: 0,
+                child: IconButton(
+                  onPressed: () => carouselSliderController.previousPage(),
+                  icon: const Icon(Icons.arrow_back_ios, color: Colors.white70),
+                ),
+              ),
+            if (itemImages.length > 1)
+              Positioned(
+                right: 0,
+                child: IconButton(
+                  onPressed: () => carouselSliderController.nextPage(),
+                  icon:
+                      const Icon(Icons.arrow_forward_ios, color: Colors.white70),
+                ),
+              ),
             Container(
               width: fullWidth,
               height: 180.r,
@@ -379,7 +405,8 @@ class IssueItemCard extends StatelessWidget {
                           EdgeInsets.symmetric(vertical: 5, horizontal: 10.r),
                       label: Text(
                         timeAgoSinceDate(
-                            passdate: DateTime.parse(issueData.createdAt!)),
+                            passdate:
+                                DateTime.parse(widget.issueData.createdAt!)),
                         style: TextStyle(
                             fontWeight: mediumFontWeight,
                             color: NewColors.whitecolor,
@@ -390,13 +417,13 @@ class IssueItemCard extends StatelessWidget {
                       height: 10.r,
                     ),
                     Badge(
-                      backgroundColor: issueData.creamUnit == 0
+                      backgroundColor: widget.issueData.creamUnit == 0
                           ? Colors.red
                           : NewColors.greencolor,
                       padding: const EdgeInsets.symmetric(
                           vertical: 5, horizontal: 10),
                       label: Text(
-                        issueData.creamUnit == 0 ? "NON-CREAM" : "CREAM",
+                        widget.issueData.creamUnit == 0 ? "NON-CREAM" : "CREAM",
                         style: TextStyle(
                             fontWeight: mediumFontWeight,
                             color: NewColors.whitecolor,
@@ -432,7 +459,7 @@ class IssueItemCard extends StatelessWidget {
                               fontSize: buildFontSize(25)),
                         ),
                         Text(
-                          issueData.issueType ?? "-",
+                          widget.issueData.issueType ?? "-",
                           style: TextStyle(
                               color: NewColors.black,
                               fontWeight: mediumFontWeight,
@@ -452,7 +479,7 @@ class IssueItemCard extends StatelessWidget {
                               fontSize: buildFontSize(25)),
                         ),
                         Text(
-                          issueItem.issueType ?? "-",
+                          widget.issueItem.issueType ?? "-",
                           style: TextStyle(
                               color: NewColors.black,
                               fontWeight: mediumFontWeight,
@@ -484,7 +511,7 @@ class IssueItemCard extends StatelessWidget {
                               fontSize: buildFontSize(25)),
                         ),
                         Text(
-                          issueItem.item ?? "-",
+                          widget.issueItem.item ?? "-",
                           style: TextStyle(
                               color: NewColors.red,
                               fontWeight: mediumFontWeight,
@@ -504,11 +531,11 @@ class IssueItemCard extends StatelessWidget {
                               fontSize: buildFontSize(25)),
                         ),
                         Text(
-                          issueData.unit?.unitNo == null
+                          widget.issueData.unit?.unitNo == null
                               ? "-"
                               : areaListResponse!.data!
-                                      .where(
-                                          (data) => data.id == issueItem.areaId)
+                                      .where((data) =>
+                                          data.id == widget.issueItem.areaId)
                                       .first
                                       .name ??
                                   "-",
@@ -542,7 +569,7 @@ class IssueItemCard extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          issueItem.remarks ?? "-",
+                          widget.issueItem.remarks ?? "-",
                           style: TextStyle(
                               color: NewColors.black,
                               fontWeight: mediumFontWeight,
@@ -560,3 +587,4 @@ class IssueItemCard extends StatelessWidget {
     );
   }
 }
+

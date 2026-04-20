@@ -397,9 +397,10 @@ class IssueCard extends StatelessWidget {
                 fit: BoxFit.cover,
 
                 // ignore: prefer_is_empty
-                image: NetworkImage(issueData.photos?.length == 0
+                image: NetworkImage(issueData.photos?.length == 0 ||
+                        issueData.photos?[0].photoPath == null
                     ? "https://staging.fixlah.com.sg/assets/desktop/img/fixlah-logo.png"
-                    : "${AppConstants.issuesImageBaseUrl}${issueData.photos![0].photoPath}"),
+                    : "${AppConstants.issuesImageBaseUrl}${issueData.photos?[0].photoPath}"),
               ),
             ),
             child: Align(
@@ -558,7 +559,7 @@ class IssueCard extends StatelessWidget {
                                   ),
                                   children: [
                                     TextSpan(
-                                      text: issueData.createdBy?.name ?? "",
+                                      text: issueData.createdBy?.username ?? "",
                                       style: TextStyle(
                                         fontSize: buildFontSize(20),
                                         fontWeight: FontWeight.bold,

@@ -46,8 +46,11 @@ class FacilitiesProvider extends ChangeNotifier {
         totalFacilities = facilityList.data!.total ?? 0;
         if (selectedFacilities.isEmpty) {
           for (var i = 0; i < totalFacilities; i++) {
-            selectedFacilities.add(facilityList.data!.data![i].id);
-            selectedFacilitiesName.add(facilityList.data!.data![i].name);
+            if (approvedFacilities
+                .contains(facilityList.data!.data![i].id.toString())) {
+              selectedFacilities.add(facilityList.data!.data![i].id);
+              selectedFacilitiesName.add(facilityList.data!.data![i].name);
+            }
           }
         }
         loading = false;
@@ -186,7 +189,7 @@ class FacilitiesProvider extends ChangeNotifier {
       print(e.toString());
       return selectedClient.client?.name ?? "";
     } finally {
-      log("Error in getting Client");
+      // log("Error in getting Client");
       loading = false;
       notifyListeners();
       return selectedClient.client?.name ?? "";

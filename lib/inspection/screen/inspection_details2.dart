@@ -1,14 +1,12 @@
 import 'package:fixlah/config/colors.dart';
 import 'package:fixlah/config/constants.dart';
 import 'package:fixlah/config/sizes.dart';
-import 'package:fixlah/config/text_fields.dart';
 import 'package:fixlah/config/utils.dart';
 import 'package:fixlah/inspection/model/inspection_get_model.dart';
 import 'package:fixlah/inspection/provider/inspection_provider.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
 
 class InspectionItemList extends StatefulWidget {

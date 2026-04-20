@@ -1,14 +1,11 @@
 import 'dart:developer';
-
 import 'package:face_camera/face_camera.dart';
 import 'package:fixlah/auth/screen/spalsh.dart';
-
 import 'package:fixlah/config/colors.dart';
 import 'package:fixlah/config/constants.dart';
 import 'package:fixlah/config/provider.dart';
 import 'package:fixlah/config/sizes.dart';
 import 'package:fixlah/work%20order/screen/wo_deatils.dart';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:onesignal_flutter/onesignal_flutter.dart';
@@ -62,11 +59,11 @@ class MyApp extends StatelessWidget {
           top: false,
           left: false,
           right: false,
-          bottom: false,
+          bottom: true,
           child: MaterialApp(
             navigatorKey: appNavigator,
             debugShowCheckedModeBanner: false,
-            title: 'Fix-Lah',
+            title: appName,
             theme: ThemeData(
               pageTransitionsTheme: const PageTransitionsTheme(builders: {
                 TargetPlatform.android: CupertinoPageTransitionsBuilder(),

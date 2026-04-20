@@ -1,7 +1,10 @@
+import 'dart:developer';
+import 'dart:io';
 import 'package:fixlah/config/colors.dart';
 import 'package:fixlah/config/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
+import 'package:image/image.dart' as img;
 import 'package:permission_handler/permission_handler.dart';
 
 class CompleteionCameraCaptureScreen extends StatefulWidget {
@@ -63,6 +66,17 @@ class _CompleteionCameraCaptureScreenState
   Future<void> _capture() async {
     if (controller != null && controller!.value.isInitialized) {
       final image = await controller!.takePicture();
+      // Bake orientation for iOS (fixes flipped/rotated images)
+      try {
+        final bytes = await image.readAsBytes();
+        img.Image? capturedImage = img.decodeImage(bytes);
+        if (capturedImage != null) {
+          final bakedImage = img.bakeOrientation(capturedImage);
+          await File(image.path).writeAsBytes(img.encodeJpg(bakedImage));
+        }
+      } catch (e) {
+        log("Error baking orientation: $e");
+      }
       controller!.pausePreview();
 
       Navigator.pop(context, image);

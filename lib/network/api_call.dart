@@ -14,6 +14,8 @@ class ApiCall {
   // Post Api Call
   static Future<ApiResponse> postApi(context,
       {required String endpoint,
+      bool? createIssue,
+      int? createIssueCount,
       Map<String, dynamic>? body,
       List<XFile>? file,
       String? fileParameter}) async {
@@ -24,12 +26,24 @@ class ApiCall {
       (key, value) => MapEntry(key, value.toString()),
     ));
     print(request.url);
-    if (file != null) {
-      for (var i = 0; i < file.length; i++) {
-        request.files.add(
-            await http.MultipartFile.fromPath(fileParameter!, file[i].path));
+    if (createIssue == true) {
+      for (var i = 0; i < createIssueCount!; i++) {
+        if (body!["items[$i][photos][]"] != null) {
+          for (var j = 0; j < body["items[$i][photos][]"].length; j++) {
+            request.files.add(await http.MultipartFile.fromPath(
+                "items[$i][photos][]", body["items[$i][photos][]"][j]));
+          }
+        }
+      }
+    } else {
+      if (file != null) {
+        for (var i = 0; i < file.length; i++) {
+          request.files.add(
+              await http.MultipartFile.fromPath(fileParameter!, file[i].path));
+        }
       }
     }
+
     print("Bearer $accessToken");
     request.headers.addAll({
       "Authorization": "Bearer $accessToken",
@@ -153,19 +167,28 @@ ApiResponse handleResponse(context, int? statusCode, response) {
       }
     } else if (statusCode == 422) {
       Map errorResponse = jsonDecode(response);
-      if (errorResponse['errors'][0]['issues'].length != 0) {
-        Fluttertoast.showToast(
-            fontSize: 20.r,
-            msg: errorResponse['errors'][0]['issues'][0].toString(),
-            textColor: NewColors.whitecolor,
-            backgroundColor: NewColors.red);
-      } else {
-        Fluttertoast.showToast(
-            fontSize: 20.r,
-            msg: errorResponse['message'].toString(),
-            textColor: NewColors.whitecolor,
-            backgroundColor: NewColors.red);
+      String msg = errorResponse['message'].toString();
+      if (errorResponse['errors'] != null) {
+        if (errorResponse['errors'] is Map &&
+            (errorResponse['errors'] as Map).isNotEmpty) {
+          var firstError = (errorResponse['errors'] as Map).values.first;
+          if (firstError is List && firstError.isNotEmpty) {
+            msg = firstError[0].toString();
+          } else if (firstError is String) {
+            msg = firstError;
+          }
+        } else if (errorResponse['errors'] is List &&
+            (errorResponse['errors'] as List).isNotEmpty) {
+          try {
+            msg = errorResponse['errors'][0]['issues'][0].toString();
+          } catch (_) {}
+        }
       }
+      Fluttertoast.showToast(
+          fontSize: 20.r,
+          msg: msg,
+          textColor: NewColors.whitecolor,
+          backgroundColor: NewColors.red);
     } else if (statusCode == 403) {
       Fluttertoast.showToast(
           fontSize: 15.r,

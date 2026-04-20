@@ -11,6 +11,7 @@ import 'package:fixlah/home/screen/home_screen.dart';
 import 'package:fixlah/network/api_call.dart';
 import 'package:fixlah/network/api_endpoints.dart';
 import 'package:fixlah/network/response_model.dart';
+import 'package:fixlah/work%20order/model/asset_details.dart';
 import 'package:fixlah/work%20order/model/work_order_detail_model.dart';
 import 'package:fixlah/work%20order/model/work_order_model.dart';
 
@@ -232,9 +233,32 @@ class WorkOrderProvider extends ChangeNotifier {
       if (apiResponse.statusCode == 200) {
         log(jsonEncode(apiResponse.response));
         selctedWOData = WorkOrderDetails.fromJson(apiResponse.response);
+        getAssets(context,
+            id: selctedWOData.data!.issueItem!.assetId!.toString());
       }
     } catch (e) {
       log("Error is getting work order deatils");
+      log(e.toString());
+    } finally {
+      loading = false;
+      notifyListeners();
+    }
+  }
+
+  AssetDetails assetDetails = AssetDetails();
+  // get asset
+  Future getAssets(context, {required String id}) async {
+    try {
+      loading = true;
+      notifyListeners();
+      ApiResponse apiResponse = await ApiCall.getApi(context,
+          endpoint: ApiEndpoints.assets + "/${id}");
+      if (apiResponse.statusCode == 200) {
+        log(jsonEncode(apiResponse.response));
+        assetDetails = AssetDetails.fromJson(apiResponse.response);
+      }
+    } catch (e) {
+      log("Error is getting work order assets");
       log(e.toString());
     } finally {
       loading = false;

@@ -351,6 +351,8 @@ class InspectionProvider extends ChangeNotifier {
         selctedItem.overallGrade =
             apiResponse.response['data']['overall_grade'];
         selctedItem.remarks = apiResponse.response['data']['remarks'];
+        selctedItem.conditionDescription =
+            apiResponse.response['data']['condition_description'];
         selctedItem.overallCompliance =
             apiResponse.response['data']['overall_compliance'];
         Navigator.pop(context);
