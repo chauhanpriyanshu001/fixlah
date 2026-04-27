@@ -6,14 +6,14 @@ import 'package:flutter_device_type/flutter_device_type.dart';
 
 class AppConstants {
   // Staging Url
-  // static String baseUrl = "https://staging.fixlah.com.sg/api/";
-  // static String assetBaseUrl =
-  //     "https://fixlah-inspection-test-bucket.s3.ap-southeast-1.amazonaws.com";
+  static String baseUrl = "https://staging.fixlah.com.sg/api/";
+  static String assetBaseUrl =
+      "https://fixlah-inspection-test-bucket.s3.ap-southeast-1.amazonaws.com";
 
   // Production Url
-  static String baseUrl = "https://fixlah.com.sg/api/";
-  static String assetBaseUrl =
-      "https://fixlah-inspection-prod-bucket.s3.ap-southeast-1.amazonaws.com";
+  // static String baseUrl = "https://fixlah.com.sg/api/";
+  // static String assetBaseUrl =
+  //     "https://fixlah-inspection-prod-bucket.s3.ap-southeast-1.amazonaws.com";
   static String issuesImageBaseUrl = "$assetBaseUrl/uploads/issue_photos/";
   static String woImageBaseUrl = "$assetBaseUrl/uploads/workorder_photos/";
 }
@@ -26,7 +26,7 @@ class SharedPreferencesKey {
 }
 
 // Global Variable
-String appName = "Fixlah";
+String appName = "Fix-Lah Staging";
 GlobalKey<NavigatorState>? appNavigator;
 
 AreaListResponse? areaListResponse;
